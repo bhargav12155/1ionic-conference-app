@@ -1,0 +1,31 @@
+<ion-content class="speaker-detail">
+    <ion-header class="ion-no-border">
+        <ion-toolbar></ion-toolbar>
+    </ion-header>
+
+    <div class="ion-padding speaker-detail">
+        <hr />
+        <h2>Latitude is {{ position?.coords?.latitude }}</h2>
+        <h2>Longitude is {{ position?.coords?.longitude }}</h2>
+
+        <h2>watch Latitude is {{ lat }}</h2>
+        <h2>watch Longitude is {{ lng }}</h2>
+
+        <div #map id="map" style="height: 400px"></div>
+
+        <ion-chip color="twitter" button>
+            <ion-icon name="logo-twitter"></ion-icon>
+            <ion-label>Twitter</ion-label>
+        </ion-chip>
+
+        <ion-chip color="dark" button>
+            <ion-icon name="logo-github"></ion-icon>
+            <ion-label>GitHub</ion-label>
+        </ion-chip>
+
+        <ion-chip color="instagram" button>
+            <ion-icon name="logo-instagram"></ion-icon>
+            <ion-label>Instagram</ion-label>
+        </ion-chip>
+    </div>
+</ion-content>

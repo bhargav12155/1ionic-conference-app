@@ -1,4 +1,12 @@
-import { Component, ViewChild, OnInit } from "@angular/core";
+import {
+  Component,
+  ViewChild,
+  OnInit,
+  NgZone,
+  ElementRef,
+  AfterViewInit,
+  Inject,
+} from "@angular/core";
 import { Router } from "@angular/router";
 import {
   AlertController,
@@ -9,19 +17,26 @@ import {
   ToastController,
   Config,
 } from "@ionic/angular";
+import { darkStyle } from "../../pages/map/map-dark-style";
+import { Geolocation } from "@capacitor/geolocation";
 
 import { ScheduleFilterPage } from "../schedule-filter/schedule-filter";
 import { ConferenceData } from "../../providers/conference-data";
 import { UserData } from "../../providers/user-data";
+import { DOCUMENT } from "@angular/common";
+import { DeviceDetectorService } from "ngx-device-detector";
+import { HttpClient } from "@angular/common/http";
+import { Geofence } from "@ionic-native/geofence/ngx";
 
 @Component({
   selector: "page-schedule",
   templateUrl: "schedule.html",
   styleUrls: ["./schedule.scss"],
 })
-export class SchedulePage implements OnInit {
+export class SchedulePage implements OnInit, AfterViewInit {
   // Gets a reference to the list element
   @ViewChild("scheduleList", { static: true }) scheduleList: IonList;
+  @ViewChild("mapPlotting", { static: true }) mapElement: ElementRef;
 
   ios: boolean;
   dayIndex = 0;
@@ -32,8 +47,12 @@ export class SchedulePage implements OnInit {
   groups: any = [];
   confDate: string;
   showSearchbar: boolean;
+  wait: Promise<string>;
+  deviceInfo: import("ngx-device-detector").DeviceInfo;
+  ipAddress: string;
 
   constructor(
+    @Inject(DOCUMENT) private doc: Document,
     public alertCtrl: AlertController,
     public confData: ConferenceData,
     public loadingCtrl: LoadingController,
@@ -42,12 +61,19 @@ export class SchedulePage implements OnInit {
     public routerOutlet: IonRouterOutlet,
     public toastCtrl: ToastController,
     public user: UserData,
-    public config: Config
+    public config: Config,
+    public ngZone: NgZone,
+    private deviceService: DeviceDetectorService,
+    private http: HttpClient,
+    private geofence: Geofence
   ) {}
 
   ngOnInit() {
     this.updateSchedule();
-
+    this.getCurrentLocation();
+    this.watchPosition();
+    this.deviceInfo = this.deviceService.getDeviceInfo();
+    this.getIpAddress();
     this.ios = this.config.get("mode") === "ios";
   }
 
@@ -112,7 +138,29 @@ export class SchedulePage implements OnInit {
       await toast.present();
     }
   }
+  getIpAddress(): void {
+    this.http
+      .get<{ ip: string }>("https://api.ipify.org?format=json")
+      .subscribe(
+        (data) => {
+          this.ipAddress = data.ip;
+        },
+        (error) => {
+          console.error("Error fetching IP address:", error);
+        }
+      );
+  }
+  isMobile(): boolean {
+    return this.deviceService.isMobile();
+  }
 
+  isTablet(): boolean {
+    return this.deviceService.isTablet();
+  }
+
+  isDesktop(): boolean {
+    return this.deviceService.isDesktop();
+  }
   async removeFavorite(
     slidingItem: HTMLIonItemSlidingElement,
     sessionData: any,
@@ -147,6 +195,203 @@ export class SchedulePage implements OnInit {
     await alert.present();
   }
 
+  watchPosition() {
+    this.wait = Geolocation.watchPosition({}, async (position, err) => {
+      if (err) {
+        console.error("Error getting position:", err);
+        return;
+      }
+
+      this.ngZone.run(async () => {
+        const { latitude: lat, longitude: lng } = position.coords;
+        console.log("watch position lat long:", lat, lng);
+        this.plotMap(position.coords);
+        try {
+          const address = await this.getAddressFromCoordinates(lat, lng);
+          console.log(`Address after the watch postion: ${address}`);
+        } catch (error) {
+          console.error("Error:", error);
+        }
+      });
+    });
+  }
+
+  async getAddressFromCoordinates(lat: number, lng: number): Promise<string> {
+    const apiKey = "AIzaSyCLRpRQ2_5XKdtVEmakB2ewtDcuP55ZeQA";
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`;
+
+    const response = await fetch(url);
+    const data = await response.json();
+    if (data.results.length > 0) {
+      return data.results[0].formatted_address;
+    } else {
+      throw new Error("No results found");
+    }
+  }
+
+  async getCurrentLocation() {
+    // const toast3 = await this.toastCtrl.create({
+    //   message: `started1`,
+    // });
+    // await toast3.present();
+
+    // const coordinates = await Geolocation.getCurrentPosition();
+    // console.log("Current position:", coordinates);
+    // const toast2 = await this.toastCtrl.create({
+    //   message: `Latitude: ${coordinates}`,
+    // });
+    // await toast2.present();
+
+    // try {
+    async function getPositionWithRetry(retries = 3) {
+      for (let i = 0; i < retries; i++) {
+        try {
+          const position = await Geolocation.getCurrentPosition({
+            timeout: 5000, // 5 seconds
+            enableHighAccuracy: true,
+          });
+          return position;
+        } catch (error) {
+          if (i === retries - 1) throw error;
+        }
+      }
+    }
+
+    try {
+      const position = await getPositionWithRetry();
+      console.log(
+        `Latitude: ${position.coords.latitude}, Longitude: ${position.coords.longitude}`
+      );
+      const apiKey = "AIzaSyCLRpRQ2_5XKdtVEmakB2ewtDcuP55ZeQA";
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${apiKey}`;
+      this.plotMap(position.coords);
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        if (data.results.length > 0) {
+          const address = data.results[0].formatted_address;
+          console.log(`Address: ${address}`);
+        } else {
+          console.log("No results found");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    } catch (error) {
+      console.error("Failed to get position:", error);
+    }
+
+    // console.log(this.position);
+
+    // const toast = await this.toastCtrl.create({
+    //   message: `Latitude: ${latitude}, Longitude: ${longitude}`,
+    //   duration: 3000,
+    //   position: "bottom",
+    // });
+    // await toast.present();
+    // } catch (error) {
+    //   const toast1 = await this.toastCtrl.create({
+    //     message: error.toString(),
+    //   });
+    //   await toast1.present();
+    //   console.error("Error getting location:", error);
+    //   const toast = await this.toastCtrl.create({
+    //     message: `Error getting location: ${error.message}`,
+    //     duration: 3000,
+    //     position: "bottom",
+    //   });
+    //   await toast1.present();
+    // }
+  }
+  getCoordsFromLocation(
+    location: string
+  ): { latitude: number; longitude: number } | null {
+    // Sample mapping for locations. Replace with actual coordinates or a service.
+    const locationCoords = {
+      "Dining Hall": { latitude: 38.89511, longitude: -77.03637 }, // Washington, D.C.
+      "Hall 2": { latitude: 32.36681, longitude: -86.30057 }, // Montgomery, AL
+      "Executive Ballroom": { latitude: 58.30193, longitude: -134.41974 }, // Juneau, AK
+      "Hall 3": { latitude: 33.44838, longitude: -112.07404 }, // Phoenix, AZ
+      "Hall 1": { latitude: 34.74648, longitude: -92.28959 }, // Little Rock, AR
+      "Grand Ballroom A": { latitude: 38.57669, longitude: -121.49342 }, // Sacramento, CA
+    };
+    return locationCoords[location] || null;
+  }
+  async updateMap(session: any) {
+    const coords = this.getCoordsFromLocation(session.location);
+    if (coords) {
+      await this.plotMap(coords);
+    } else {
+      console.error("Coordinates for location not found.");
+    }
+  }
+  async plotMap(coords?) {
+    const appEl = this.doc.querySelector("ion-app");
+    let isDark = false;
+    let style = [];
+    if (appEl.classList.contains("ion-palette-dark")) {
+      style = darkStyle;
+    }
+
+    const googleMaps = await getGoogleMaps(
+      "AIzaSyCLRpRQ2_5XKdtVEmakB2ewtDcuP55ZeQA"
+    );
+
+    let map;
+    const centerCoords = coords
+      ? { lat: coords.latitude, lng: coords.longitude }
+      : { lat: 19.075984, lng: 72.877656 };
+
+    const mapEle = this.mapElement.nativeElement;
+
+    map = new googleMaps.Map(mapEle, {
+      center: centerCoords,
+      zoom: 16,
+      styles: style,
+    });
+
+    const infoWindow = new googleMaps.InfoWindow({
+      content: `<h5>test test</h5>`,
+    });
+
+    const marker = new googleMaps.Marker({
+      position: centerCoords,
+      map,
+      title: "markerData.name",
+    });
+
+    marker.addListener("click", () => {
+      infoWindow.open(map, marker);
+    });
+
+    googleMaps.event.addListenerOnce(map, "idle", () => {
+      mapEle.classList.add("show-map");
+    });
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === "class") {
+          const el = mutation.target as HTMLElement;
+          isDark = el.classList.contains("ion-palette-dark");
+          if (map && isDark) {
+            map.setOptions({ styles: darkStyle });
+          } else if (map) {
+            map.setOptions({ styles: [] });
+          }
+        }
+      });
+    });
+
+    observer.observe(appEl, {
+      attributes: true,
+    });
+  }
+
+  async ngAfterViewInit() {
+    this.plotMap();
+  }
+
   async openSocial(network: string, fab: HTMLIonFabElement) {
     const loading = await this.loadingCtrl.create({
       message: `Posting to ${network}`,
@@ -156,4 +401,28 @@ export class SchedulePage implements OnInit {
     await loading.onWillDismiss();
     fab.close();
   }
+}
+
+function getGoogleMaps(apiKey: string): Promise<any> {
+  const win = window as any;
+  const googleModule = win.google;
+  if (googleModule && googleModule.maps) {
+    return Promise.resolve(googleModule.maps);
+  }
+
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&v=3.31`;
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+    script.onload = () => {
+      const googleModule2 = win.google;
+      if (googleModule2 && googleModule2.maps) {
+        resolve(googleModule2.maps);
+      } else {
+        reject("google maps not available");
+      }
+    };
+  });
 }
