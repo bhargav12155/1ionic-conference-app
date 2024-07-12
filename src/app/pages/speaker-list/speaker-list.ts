@@ -1,7 +1,7 @@
 import { Component, ElementRef, ViewChild } from "@angular/core";
 import { ConferenceData } from "../../providers/conference-data";
 import { Geofence } from "@ionic-native/geofence";
-import { NavController, Platform } from "@ionic/angular/core";
+// import { NavController, Platform } from "@ionic/angular/core";
 declare var google;
 let map: any;
 @Component({
@@ -19,21 +19,18 @@ export class SpeakerListPage {
   @ViewChild("map") mapElement: ElementRef;
 
   constructor(
-    public navCtrl: NavController,
-    public confData: ConferenceData,
-    public platform: Platform,
-    private geofence: Geofence
-  ) {
-    geofence.initialize().then(
-      () => console.log("Geofence Plugin Ready"),
-      (err) => console.log(err)
-    );
-
+    // public navCtrl: NavController,
+    public confData: ConferenceData // public platform: Platform,
+  ) // private geofence: Geofence
+  {
+    // geofence.initialize().then(
+    //   () => console.log("Geofence Plugin Ready"),
+    //   (err) => console.log(err)
+    // );
     // this.removeAllGeofence();
-
-    platform.ready().then(() => {
-      this.getPlaces();
-    });
+    // platform.ready().then(() => {
+    //   this.getPlaces();
+    // });
   }
 
   getPlaces() {
@@ -81,13 +78,13 @@ export class SpeakerListPage {
       },
     };
 
-    this.geofence.addOrUpdate(fence).then(
-      () => console.log("Geofence added"),
-      (err) => console.log("Geofence failed to add")
-    );
+    // this.geofence.addOrUpdate(fence).then(
+    //   () => console.log("Geofence added"),
+    //   (err) => console.log("Geofence failed to add")
+    // );
   }
 
   private removeAllGeofence() {
-    this.geofence.removeAll();
+    // this.geofence.removeAll();
   }
 }
