@@ -34,7 +34,6 @@ $value in map-remove($categories) {
     height: 50%;
     transition: opacity 150ms ease-in;
     background-color: transparent;
-    opacity: 0;
 }
 
 .show-map {
@@ -54,4 +53,8 @@ $value in map-remove($categories) {
 
 .show-map {
     display: block;
+}
+#map-poly {
+    height: 500px;
+    width: 100%;
 }

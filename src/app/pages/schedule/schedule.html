@@ -46,14 +46,21 @@
             <div>
                 <h1>Device Details</h1>
                 <p>IP Address: {{ ipAddress }}</p>
-                <p>Device: {{ deviceInfo.device }}</p>
-                <p>Operating System: {{ deviceInfo.os }}</p>
-                <p>OS Version: {{ deviceInfo.os_version }}</p>
-                <p>Browser: {{ deviceInfo.browser }}</p>
-                <p>Browser Version: {{ deviceInfo.browser_version }}</p>
+                <p>Device: {{ deviceInfo?.device }}</p>
+                <p>Operating System: {{ deviceInfo?.os }}</p>
+                <p>OS Version: {{ deviceInfo?.os_version }}</p>
+                <p>Browser: {{ deviceInfo?.browser }}</p>
+                <p>Browser Version: {{ deviceInfo?.browser_version }}</p>
                 <p>Is Mobile: {{ isMobile() }}</p>
                 <p>Is Tablet: {{ isTablet() }}</p>
                 <p>Is Desktop: {{ isDesktop() }}</p>
+                <p>
+                    stopMonitoring
+                </p>
+                <p>
+                    list montitored
+                </p>
+
             </div>
 
             <ion-item-group *ngFor="let group of groups" [hidden]="group.hide">
@@ -86,7 +93,11 @@
             </ion-item-group>
         </ion-list>
         <ion-content>
-            <div #mapPlotting class="map-canvas"></div>
+            <!-- <div #mapPlotting class="map-canvas"></div> -->
+
+
+            <div #mapPlotting id="map-poly" class="map-canvas"></div>
+
         </ion-content>
     </div>
 

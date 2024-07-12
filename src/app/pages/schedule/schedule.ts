@@ -26,7 +26,8 @@ import { UserData } from "../../providers/user-data";
 import { DOCUMENT } from "@angular/common";
 import { DeviceDetectorService } from "ngx-device-detector";
 import { HttpClient } from "@angular/common/http";
-import { Geofence } from "@ionic-native/geofence/ngx";
+
+import { Platform } from "@ionic/angular";
 
 @Component({
   selector: "page-schedule",
@@ -36,7 +37,7 @@ import { Geofence } from "@ionic-native/geofence/ngx";
 export class SchedulePage implements OnInit, AfterViewInit {
   // Gets a reference to the list element
   @ViewChild("scheduleList", { static: true }) scheduleList: IonList;
-  @ViewChild("mapPlotting", { static: true }) mapElement: ElementRef;
+  @ViewChild("mapPlotting", { static: false }) mapElement: ElementRef;
 
   ios: boolean;
   dayIndex = 0;
@@ -65,18 +66,21 @@ export class SchedulePage implements OnInit, AfterViewInit {
     public ngZone: NgZone,
     private deviceService: DeviceDetectorService,
     private http: HttpClient,
-    private geofence: Geofence
+    private platform: Platform
   ) {}
 
   ngOnInit() {
-    this.updateSchedule();
-    this.getCurrentLocation();
-    this.watchPosition();
-    this.deviceInfo = this.deviceService.getDeviceInfo();
-    this.getIpAddress();
-    this.ios = this.config.get("mode") === "ios";
+    this.platform.ready().then(() => {
+      this.updateSchedule();
+      this.getCurrentLocation();
+      this.watchPosition();
+      // this.addGeofences();
+      // this.initializeGeofenceEvents();
+      this.deviceInfo = this.deviceService.getDeviceInfo();
+      this.getIpAddress();
+      this.ios = this.config.get("mode") === "ios";
+    });
   }
-
   updateSchedule() {
     // Close any open sliding items when the schedule updates
     if (this.scheduleList) {
@@ -196,29 +200,35 @@ export class SchedulePage implements OnInit, AfterViewInit {
   }
 
   watchPosition() {
-    this.wait = Geolocation.watchPosition({}, async (position, err) => {
-      if (err) {
-        console.error("Error getting position:", err);
-        return;
-      }
-
-      this.ngZone.run(async () => {
-        const { latitude: lat, longitude: lng } = position.coords;
-        console.log("watch position lat long:", lat, lng);
-        this.plotMap(position.coords);
-        try {
-          const address = await this.getAddressFromCoordinates(lat, lng);
-          console.log(`Address after the watch postion: ${address}`);
-        } catch (error) {
-          console.error("Error:", error);
+    this.wait = Geolocation.watchPosition(
+      {
+        timeout: 10000, // Increase timeout duration (in milliseconds)
+        maximumAge: 0, // Use the latest position
+        enableHighAccuracy: true, // Request high accuracy
+      },
+      async (position, err) => {
+        if (err) {
+          console.error("Error getting position:", err);
+          return;
         }
-      });
-    });
+
+        this.ngZone.run(async () => {
+          const { latitude: lat, longitude: lng } = position.coords;
+          console.log("watch position lat long:", lat, lng);
+          try {
+            const address = await this.getAddressFromCoordinates(lat, lng);
+            console.log(`waits and gets the reverse address =: ${address}`);
+          } catch (error) {
+            console.error("Error:", error);
+          }
+        });
+      }
+    );
   }
+  apiKey = "AIzaSyCLRpRQ2_5XKdtVEmakB2ewtDcuP55ZeQA";
 
   async getAddressFromCoordinates(lat: number, lng: number): Promise<string> {
-    const apiKey = "AIzaSyCLRpRQ2_5XKdtVEmakB2ewtDcuP55ZeQA";
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`;
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${this.apiKey}`;
 
     const response = await fetch(url);
     const data = await response.json();
@@ -243,35 +253,35 @@ export class SchedulePage implements OnInit, AfterViewInit {
     // await toast2.present();
 
     // try {
-    async function getPositionWithRetry(retries = 3) {
-      for (let i = 0; i < retries; i++) {
-        try {
-          const position = await Geolocation.getCurrentPosition({
-            timeout: 5000, // 5 seconds
-            enableHighAccuracy: true,
-          });
-          return position;
-        } catch (error) {
-          if (i === retries - 1) throw error;
-        }
-      }
-    }
 
     try {
       const position = await getPositionWithRetry();
       console.log(
         `Latitude: ${position.coords.latitude}, Longitude: ${position.coords.longitude}`
       );
-      const apiKey = "AIzaSyCLRpRQ2_5XKdtVEmakB2ewtDcuP55ZeQA";
-      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${apiKey}`;
-      this.plotMap(position.coords);
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${this.apiKey}`;
+      // this.plotMap(position.coords);
+      const mockPosition = {
+        coords: {
+          latitude: position.coords ? position.coords.latitude : 19.075984,
+          longitude: position.coords ? position.coords.longitude : 72.877656,
+        },
+      };
 
+      if (this.isWithinBounds(mockPosition)) {
+        console.log(
+          "Position is within the specified bounds. Triggering action..."
+        );
+        // Your action here
+      } else {
+        console.log("Position is outside the specified bounds.");
+      }
       try {
         const response = await fetch(url);
         const data = await response.json();
         if (data.results.length > 0) {
           const address = data.results[0].formatted_address;
-          console.log(`Address: ${address}`);
+          console.log(`Address in gettin current locatiomn : ${address}`);
         } else {
           console.log("No results found");
         }
@@ -303,6 +313,27 @@ export class SchedulePage implements OnInit, AfterViewInit {
     //   });
     //   await toast1.present();
     // }
+
+    // Example usage with a mock position
+    // const mockPosition = {
+    //   coords: {
+    //     latitude: 40.709,
+    //     longitude: -74.01,
+    //   },
+    // };
+    // console.log("**");
+    // console.log("**");
+    // console.log("**");
+    // console.log("**");
+
+    // if (this.isWithinBounds(mockPosition)) {
+    //   console.log(
+    //     "Position is within the specified bounds. Triggering action..."
+    //   );
+    //   // Your action here
+    // } else {
+    //   console.log("Position is outside the specified bounds.");
+    // }
   }
   getCoordsFromLocation(
     location: string
@@ -321,7 +352,7 @@ export class SchedulePage implements OnInit, AfterViewInit {
   async updateMap(session: any) {
     const coords = this.getCoordsFromLocation(session.location);
     if (coords) {
-      await this.plotMap(coords);
+      // await this.plotMap(coords);
     } else {
       console.error("Coordinates for location not found.");
     }
@@ -334,9 +365,7 @@ export class SchedulePage implements OnInit, AfterViewInit {
       style = darkStyle;
     }
 
-    const googleMaps = await getGoogleMaps(
-      "AIzaSyCLRpRQ2_5XKdtVEmakB2ewtDcuP55ZeQA"
-    );
+    const googleMaps = await getGoogleMaps(this.apiKey);
 
     let map;
     const centerCoords = coords
@@ -389,7 +418,8 @@ export class SchedulePage implements OnInit, AfterViewInit {
   }
 
   async ngAfterViewInit() {
-    this.plotMap();
+    // this.plotMap();
+    this.initPolygonMap();
   }
 
   async openSocial(network: string, fab: HTMLIonFabElement) {
@@ -401,6 +431,108 @@ export class SchedulePage implements OnInit, AfterViewInit {
     await loading.onWillDismiss();
     fab.close();
   }
+  map;
+  polygon;
+
+  async initPolygonMap() {
+    const appEl = this.doc.querySelector("ion-app");
+    let isDark = false;
+    let style = [];
+    if (appEl.classList.contains("ion-palette-dark")) {
+      style = darkStyle;
+    }
+    const googleMaps = await getGoogleMaps(this.apiKey);
+    const mapEle = this.mapElement.nativeElement;
+    const position = await getPositionWithRetry();
+    const mockPosition = {
+      coords: {
+        latitude: position.coords ? position.coords.latitude : 19.075984,
+        longitude: position.coords ? position.coords.longitude : 72.877656,
+      },
+    };
+    let map = new googleMaps.Map(mapEle, {
+      center: mockPosition,
+      zoom: 16,
+      styles: style,
+    });
+    const centerCoords = {
+      lat: position.coords.latitude,
+      lng: position.coords.longitude,
+    };
+
+    this.map = new googleMaps.Map(mapEle, {
+      center: centerCoords,
+      zoom: 13,
+    });
+    const marker = new googleMaps.Marker({
+      position: centerCoords,
+      map,
+      title: "markerData.name",
+    });
+    const infoWindow = new googleMaps.InfoWindow({
+      content: `<h5>test test</h5>`,
+    });
+
+    marker.addListener("click", () => {
+      infoWindow.open(map, marker);
+    });
+
+    const polygonCoords = [
+      { lat: 41.181, lng: -96.229 },
+      { lat: 41.181, lng: -96.227 },
+      { lat: 41.18, lng: -96.227 },
+      { lat: 41.18, lng: -96.229 },
+    ];
+    this.polygon = new googleMaps.Polygon({
+      paths: polygonCoords,
+      strokeColor: "#FF0000",
+      strokeOpacity: 0.8,
+      strokeWeight: 2,
+      fillColor: "#FF0000",
+      fillOpacity: 0.35,
+    });
+
+    this.polygon.setMap(this.map);
+
+    if (this.isWithinPolygon(mockPosition)) {
+      console.log(
+        "Position is within the polygon bounds. Triggering action..."
+      );
+      // Your action here
+    } else {
+      console.log("Position is outside the polygon bounds.");
+    }
+  }
+  async isWithinPolygon(position) {
+    const googleMaps = await getGoogleMaps(this.apiKey);
+    const latLng = await googleMaps.Map.LatLng(
+      position.coords.latitude,
+      position.coords.longitude
+    );
+    return await googleMaps.Map.geometry.poly.containsLocation(
+      latLng,
+      this.polygon
+    );
+  }
+
+  // Function to check if the position is within the bounds
+  isWithinBounds(position) {
+    // Define the coordinates of the rectangle
+    const bounds = {
+      north: 40.7128, // Upper latitude
+      south: 40.706, // Lower latitude
+      east: -74.0059, // Right longitude
+      west: -74.013, // Left longitude
+    };
+
+    const { latitude, longitude } = position.coords;
+    return (
+      latitude <= bounds.north &&
+      latitude >= bounds.south &&
+      longitude <= bounds.east &&
+      longitude >= bounds.west
+    );
+  }
 }
 
 function getGoogleMaps(apiKey: string): Promise<any> {
@@ -411,6 +543,7 @@ function getGoogleMaps(apiKey: string): Promise<any> {
   }
 
   return new Promise((resolve, reject) => {
+    apiKey = "AIzaSyCLRpRQ2_5XKdtVEmakB2ewtDcuP55ZeQA";
     const script = document.createElement("script");
     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&v=3.31`;
     script.async = true;
@@ -425,4 +558,17 @@ function getGoogleMaps(apiKey: string): Promise<any> {
       }
     };
   });
+}
+async function getPositionWithRetry(retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const position = await Geolocation.getCurrentPosition({
+        timeout: 5000, // 5 seconds
+        enableHighAccuracy: true,
+      });
+      return position;
+    } catch (error) {
+      if (i === retries - 1) throw error;
+    }
+  }
 }
