@@ -32,16 +32,19 @@ export class MapPage implements AfterViewInit {
     if (appEl.classList.contains("ion-palette-dark")) {
       style = darkStyle;
     }
+    let apiKey = "AIzaSyCLRpRQ2_5XKdtVEmakB2ewtDcuP55ZeQA";
 
-    const googleMaps = await getGoogleMaps("YOUR_API_KEY_HERE");
+    const googleMaps = await getGoogleMaps(apiKey);
 
     let map;
 
     this.confData.getMap().subscribe((mapData: any) => {
       const mapEle = this.mapElement.nativeElement;
+      console.log(mapData);
+      const centerCoords = { lat: 19.075984, lng: 72.877656 };
 
       map = new googleMaps.Map(mapEle, {
-        center: mapData.find((d: any) => d.center),
+        center: centerCoords,
         zoom: 16,
         styles: style,
       });

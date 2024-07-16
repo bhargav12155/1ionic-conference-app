@@ -51,6 +51,7 @@ export class SchedulePage implements OnInit, AfterViewInit {
   wait: Promise<string>;
   deviceInfo: import("ngx-device-detector").DeviceInfo;
   ipAddress: string;
+  polygons: any = [];
 
   constructor(
     @Inject(DOCUMENT) private doc: Document,
@@ -72,8 +73,7 @@ export class SchedulePage implements OnInit, AfterViewInit {
   ngOnInit() {
     this.platform.ready().then(() => {
       this.updateSchedule();
-      this.getCurrentLocation();
-      this.watchPosition();
+
       // this.addGeofences();
       // this.initializeGeofenceEvents();
       this.deviceInfo = this.deviceService.getDeviceInfo();
@@ -199,32 +199,62 @@ export class SchedulePage implements OnInit, AfterViewInit {
     await alert.present();
   }
 
-  watchPosition() {
+  watchPosition(googleMaps) {
+    console.log("watchposition function");
+
     this.wait = Geolocation.watchPosition(
       {
-        timeout: 10000, // Increase timeout duration (in milliseconds)
-        maximumAge: 0, // Use the latest position
-        enableHighAccuracy: true, // Request high accuracy
+        timeout: 20000, // Increase timeout duration to 20 seconds
+        maximumAge: 0,
+        enableHighAccuracy: true,
       },
       async (position, err) => {
+        console.log("position :", position);
+        console.log("err in watch postion:", err);
+
         if (err) {
-          console.error("Error getting position:", err);
+          if (err.code === 3) {
+            console.error("Timeout expired while trying to get the position.");
+            // Optionally, handle timeout (e.g., use fallback)
+          }
           return;
         }
 
         this.ngZone.run(async () => {
-          const { latitude: lat, longitude: lng } = position.coords;
-          console.log("watch position lat long:", lat, lng);
+          const currentPosition = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+
           try {
-            const address = await this.getAddressFromCoordinates(lat, lng);
-            console.log(`waits and gets the reverse address =: ${address}`);
+            const isInAnyPolygon = await this.isWithinPolygon(currentPosition);
+            console.log(isInAnyPolygon);
+
+            if (isInAnyPolygon) {
+              console.log(
+                "Position is within one of the polygon bounds. Triggering action..."
+              );
+            } else {
+              console.log("Position is outside all polygon bounds.");
+            }
+
+            const address = await this.getAddressFromCoordinates(
+              position.coords.latitude,
+              position.coords.longitude
+            );
+            console.log(`Waits and gets the reverse address =: ${address}`);
           } catch (error) {
             console.error("Error:", error);
           }
+
+          // Plot the new point on the map
+          this.addMarker(googleMaps, currentPosition);
+          this.map.setCenter(currentPosition);
         });
       }
     );
   }
+
   apiKey = "AIzaSyCLRpRQ2_5XKdtVEmakB2ewtDcuP55ZeQA";
 
   async getAddressFromCoordinates(lat: number, lng: number): Promise<string> {
@@ -260,13 +290,17 @@ export class SchedulePage implements OnInit, AfterViewInit {
         `Latitude: ${position.coords.latitude}, Longitude: ${position.coords.longitude}`
       );
       const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${this.apiKey}`;
-      // this.plotMap(position.coords);
+      this.plotMap(position.coords);
       const mockPosition = {
         coords: {
           latitude: position.coords ? position.coords.latitude : 19.075984,
           longitude: position.coords ? position.coords.longitude : 72.877656,
         },
       };
+      console.log(
+        "this is mocked position when trying to call location :",
+        mockPosition
+      );
 
       if (this.isWithinBounds(mockPosition)) {
         console.log(
@@ -435,66 +469,138 @@ export class SchedulePage implements OnInit, AfterViewInit {
   polygon;
 
   async initPolygonMap() {
+    const googleMaps = await this.initializeGoogleMaps();
+    const mockPosition = await this.getMockPosition();
+    this.map = this.createMap(googleMaps, mockPosition);
+    this.addMarker(googleMaps, mockPosition);
+    this.setupClickListener(googleMaps);
+    this.watchPosition(googleMaps);
+  }
+
+  async initializeGoogleMaps() {
     const appEl = this.doc.querySelector("ion-app");
-    let isDark = false;
-    let style = [];
-    if (appEl.classList.contains("ion-palette-dark")) {
-      style = darkStyle;
-    }
-    const googleMaps = await getGoogleMaps(this.apiKey);
-    const mapEle = this.mapElement.nativeElement;
+    let style = appEl.classList.contains("ion-palette-dark") ? darkStyle : [];
+    return await getGoogleMaps(this.apiKey);
+  }
+
+  async getMockPosition() {
     const position = await getPositionWithRetry();
-    const mockPosition = {
+    return {
       coords: {
         latitude: position.coords ? position.coords.latitude : 19.075984,
         longitude: position.coords ? position.coords.longitude : 72.877656,
       },
     };
-    let map = new googleMaps.Map(mapEle, {
-      center: mockPosition,
-      zoom: 16,
-      styles: style,
-    });
-    const centerCoords = {
-      lat: position.coords.latitude,
-      lng: position.coords.longitude,
-    };
+  }
 
-    this.map = new googleMaps.Map(mapEle, {
+  createMap(googleMaps, mockPosition) {
+    const mapEle = this.mapElement.nativeElement;
+    const centerCoords = {
+      lat: mockPosition.coords.latitude,
+      lng: mockPosition.coords.longitude,
+    };
+    return new googleMaps.Map(mapEle, {
       center: centerCoords,
       zoom: 13,
     });
+  }
+
+  addMarker(googleMaps, mockPosition) {
+    console.log("mockPosition :");
+    console.log("mockPosition :", mockPosition);
+
     const marker = new googleMaps.Marker({
-      position: centerCoords,
-      map,
+      position: {
+        lat: mockPosition?.lat
+          ? mockPosition.lat
+          : mockPosition.coords.latitude,
+        lng: mockPosition.lng
+          ? mockPosition.lng
+          : mockPosition.coords.longitude,
+      },
+      map: this.map,
       title: "markerData.name",
     });
+
     const infoWindow = new googleMaps.InfoWindow({
       content: `<h5>test test</h5>`,
     });
 
     marker.addListener("click", () => {
-      infoWindow.open(map, marker);
+      infoWindow.open(this.map, marker);
     });
+  }
 
-    const polygonCoords = [
-      { lat: 41.181, lng: -96.229 },
-      { lat: 41.181, lng: -96.227 },
-      { lat: 41.18, lng: -96.227 },
-      { lat: 41.18, lng: -96.229 },
-    ];
-    this.polygon = new googleMaps.Polygon({
-      paths: polygonCoords,
+  async setupClickListener(googleMaps) {
+    let gotPolygonCoords = [];
+    let lastClickTime = 0;
+    let clickTimeout: any;
+
+    googleMaps.event.addListener(this.map, "click", async (event) => {
+      const currentTime = new Date().getTime();
+      const timeDifference = currentTime - lastClickTime;
+
+      console.log("below are lats and lings after clicking");
+      console.log(event.latLng.lat());
+      console.log(event.latLng.lng());
+
+      if (timeDifference > 2000 && gotPolygonCoords.length > 0) {
+        gotPolygonCoords = [];
+        console.log("******");
+        console.log("******");
+        console.log("******");
+        console.log("******");
+        // await this.handlePolygonCreation(googleMaps,gotPolygonCoords);
+      }
+
+      gotPolygonCoords.push({
+        lat: event.latLng.lat(),
+        lng: event.latLng.lng(),
+      });
+
+      console.log("gotPolygonCoords:", gotPolygonCoords);
+
+      if (clickTimeout) {
+        clearTimeout(clickTimeout);
+      }
+
+      clickTimeout = setTimeout(async () => {
+        if (gotPolygonCoords.length > 0) {
+          await this.handlePolygonCreation(googleMaps, gotPolygonCoords);
+          gotPolygonCoords = [];
+          // this.polygons.push(gotPolygonCoords);
+        }
+      }, 2000);
+
+      lastClickTime = currentTime;
+    });
+  }
+
+  async handlePolygonCreation(googleMaps, coords) {
+    console.log("Creating polygon with coordinates:", coords);
+    console.log("Creating polygon with coordinates:", coords);
+
+    const polygon = new googleMaps.Polygon({
+      paths: coords,
       strokeColor: "#FF0000",
       strokeOpacity: 0.8,
       strokeWeight: 2,
-      fillColor: "#FF0000",
+      fillColor: "green",
       fillOpacity: 0.35,
     });
 
-    this.polygon.setMap(this.map);
+    polygon.setMap(this.map);
+    this.polygons.push(polygon); // Store the created polygon
 
-    if (this.isWithinPolygon(mockPosition)) {
+    const mockPosition = await this.getMockPosition(); // Use the updated mockPosition
+    const isInPolygon = await this.isWithinPolygon(mockPosition);
+    this.handlePolygonCheck(isInPolygon);
+  }
+
+  handlePolygonCheck(isInPolygon) {
+    console.log("I am in handle polygin check :", isInPolygon);
+
+    if (isInPolygon) {
       console.log(
         "Position is within the polygon bounds. Triggering action..."
       );
@@ -503,18 +609,55 @@ export class SchedulePage implements OnInit, AfterViewInit {
       console.log("Position is outside the polygon bounds.");
     }
   }
-  async isWithinPolygon(position) {
-    const googleMaps = await getGoogleMaps(this.apiKey);
-    const latLng = await googleMaps.Map.LatLng(
-      position.coords.latitude,
-      position.coords.longitude
-    );
-    return await googleMaps.Map.geometry.poly.containsLocation(
-      latLng,
-      this.polygon
+
+  // Function to check if the current position is within any polygon
+  async isWithinAnyPolygon(position) {
+    return this.polygons.some((polygon) =>
+      this.isLocationInPolygon(position, polygon)
     );
   }
+  // Function to check if a location is within a specific polygon
+  isLocationInPolygon(location, polygon) {
+    const paths = polygon.getPath();
+    let inside = false;
+    for (let i = 0, j = paths.getLength() - 1; i < paths.getLength(); j = i++) {
+      const xi = paths.getAt(i).lat(),
+        yi = paths.getAt(i).lng();
+      const xj = paths.getAt(j).lat(),
+        yj = paths.getAt(j).lng();
 
+      const intersect =
+        yi > location.lng !== yj > location.lng &&
+        location.lat < ((xj - xi) * (location.lng - yi)) / (yj - yi) + xi;
+      if (intersect) inside = !inside;
+    }
+    return inside;
+  }
+
+  async isWithinPolygon(position) {
+    console.log("Checking polygon bounds");
+    console.log("position:", position);
+
+    // Ensure Google Maps API is loaded
+    const googleMaps = await getGoogleMaps(this.apiKey);
+
+    // Create a LatLng object from the position coordinates
+    const latLng = new googleMaps.LatLng(position.lat, position.lng);
+
+    console.log("this.polygons :", this.polygons);
+
+    // Check if the position is within any of the polygons
+    for (const polygon of this.polygons) {
+      if (googleMaps.geometry.poly.containsLocation(latLng, polygon)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  handleAction() {
+    console.log("handling here");
+  }
   // Function to check if the position is within the bounds
   isWithinBounds(position) {
     // Define the coordinates of the rectangle
@@ -533,6 +676,7 @@ export class SchedulePage implements OnInit, AfterViewInit {
       longitude >= bounds.west
     );
   }
+  getCoordinatesByclicking() {}
 }
 
 function getGoogleMaps(apiKey: string): Promise<any> {
@@ -543,9 +687,8 @@ function getGoogleMaps(apiKey: string): Promise<any> {
   }
 
   return new Promise((resolve, reject) => {
-    apiKey = "AIzaSyCLRpRQ2_5XKdtVEmakB2ewtDcuP55ZeQA";
     const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&v=3.31`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=geometry&v=3.31`;
     script.async = true;
     script.defer = true;
     document.body.appendChild(script);
@@ -559,6 +702,7 @@ function getGoogleMaps(apiKey: string): Promise<any> {
     };
   });
 }
+
 async function getPositionWithRetry(retries = 3) {
   for (let i = 0; i < retries; i++) {
     try {

@@ -104,8 +104,8 @@ export class AppComponent implements OnInit {
       });
     });
 
-    this.getCurrentLocation();
-    this.watchPosition();
+    // this.getCurrentLocation();
+    // this.watchPosition();
   }
 
   watchPosition() {
@@ -117,11 +117,11 @@ export class AppComponent implements OnInit {
 
       this.ngZone.run(async () => {
         const { latitude: lat, longitude: lng } = position.coords;
-        console.log("watch position lat long:", lat, lng);
+        // console.log("watch position lat long:", lat, lng);
 
         try {
           const address = await this.getAddressFromCoordinates(lat, lng);
-          console.log(`Address: ${address}`);
+          // console.log(`Address: ${address}`);
         } catch (error) {
           console.error("Error:", error);
         }
@@ -172,9 +172,9 @@ export class AppComponent implements OnInit {
 
     try {
       const position = await getPositionWithRetry();
-      console.log(
-        `Latitude: ${position.coords.latitude}, Longitude: ${position.coords.longitude}`
-      );
+      // console.log(
+      //   `Latitude: ${position.coords.latitude}, Longitude: ${position.coords.longitude}`
+      // );
       const apiKey = "AIzaSyCLRpRQ2_5XKdtVEmakB2ewtDcuP55ZeQA";
       const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${apiKey}`;
 
@@ -183,7 +183,7 @@ export class AppComponent implements OnInit {
         const data = await response.json();
         if (data.results.length > 0) {
           const address = data.results[0].formatted_address;
-          console.log(`Address: ${address}`);
+          // console.log(`Address: ${address}`);
         } else {
           console.log("No results found");
         }
@@ -194,7 +194,7 @@ export class AppComponent implements OnInit {
       console.error("Failed to get position:", error);
     }
 
-    console.log(this.position);
+    // console.log(this.position);
 
     // const toast = await this.toastCtrl.create({
     //   message: `Latitude: ${latitude}, Longitude: ${longitude}`,
