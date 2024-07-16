@@ -17,6 +17,9 @@ import {
   ToastController,
   Config,
 } from "@ionic/angular";
+import { lastValueFrom } from "rxjs";
+
+import { Device } from "@capacitor/device";
 import { darkStyle } from "../../pages/map/map-dark-style";
 import { Geolocation } from "@capacitor/geolocation";
 
@@ -52,6 +55,7 @@ export class SchedulePage implements OnInit, AfterViewInit {
   deviceInfo: import("ngx-device-detector").DeviceInfo;
   ipAddress: string;
   polygons: any = [];
+  deviceInfo1: any;
 
   constructor(
     @Inject(DOCUMENT) private doc: Document,
@@ -73,9 +77,6 @@ export class SchedulePage implements OnInit, AfterViewInit {
   ngOnInit() {
     this.platform.ready().then(() => {
       this.updateSchedule();
-
-      // this.addGeofences();
-      // this.initializeGeofenceEvents();
       this.deviceInfo = this.deviceService.getDeviceInfo();
       this.getIpAddress();
       this.ios = this.config.get("mode") === "ios";
@@ -127,33 +128,38 @@ export class SchedulePage implements OnInit, AfterViewInit {
       slidingItem.close();
 
       // Create a toast
-      const toast = await this.toastCtrl.create({
-        header: `${sessionData.name} was successfully added as a favorite.`,
-        duration: 3000,
-        buttons: [
-          {
-            text: "Close",
-            role: "cancel",
-          },
-        ],
-      });
+      // this.currentToast = await this.toastCtrl.create({
+      //   header: `${sessionData.name} was successfully added as a favorite.`,
+      //   duration: 3000,
+      //   buttons: [
+      //     {
+      //       text: "Close",
+      //       role: "cancel",
+      //     },
+      //   ],
+      // });
 
-      // Present the toast at the bottom of the page
-      await toast.present();
+      // // Present the toast at the bottom of the page
+      // await toast.present();
     }
   }
-  getIpAddress(): void {
-    this.http
-      .get<{ ip: string }>("https://api.ipify.org?format=json")
-      .subscribe(
-        (data) => {
-          this.ipAddress = data.ip;
-        },
-        (error) => {
-          console.error("Error fetching IP address:", error);
-        }
+
+  async getIpAddress(): Promise<void> {
+    try {
+      // Fetch IP address
+      const data = await lastValueFrom(
+        this.http.get<{ ip: string }>("https://api.ipify.org?format=json")
       );
+      this.ipAddress = data.ip;
+
+      // Get device info
+      this.deviceInfo1 = await Device.getInfo();
+      console.log("Device Info:", this.deviceInfo1);
+    } catch (error) {
+      console.error("Error fetching IP address or device info:", error);
+    }
   }
+
   isMobile(): boolean {
     return this.deviceService.isMobile();
   }
@@ -225,30 +231,25 @@ export class SchedulePage implements OnInit, AfterViewInit {
             lat: position.coords.latitude,
             lng: position.coords.longitude,
           };
-
-          try {
-            const isInAnyPolygon = await this.isWithinPolygon(currentPosition);
-            console.log(isInAnyPolygon);
-
-            if (isInAnyPolygon) {
-              console.log(
-                "Position is within one of the polygon bounds. Triggering action..."
+          if (this.polygons.length > 0) {
+            try {
+              const isInAnyPolygon = await this.isWithinPolygon(
+                currentPosition
               );
-            } else {
-              console.log("Position is outside all polygon bounds.");
+
+              await this.handlePolygonCheck(isInAnyPolygon);
+
+              const address = await this.getAddressFromCoordinates(
+                position.coords.latitude,
+                position.coords.longitude
+              );
+              console.log(`Waits and gets the reverse address =: ${address}`);
+            } catch (error) {
+              console.error("Error:", error);
             }
-
-            const address = await this.getAddressFromCoordinates(
-              position.coords.latitude,
-              position.coords.longitude
-            );
-            console.log(`Waits and gets the reverse address =: ${address}`);
-          } catch (error) {
-            console.error("Error:", error);
           }
-
           // Plot the new point on the map
-          this.addMarker(googleMaps, currentPosition);
+          this.addMarker(googleMaps, currentPosition, this.map);
           this.map.setCenter(currentPosition);
         });
       }
@@ -269,106 +270,41 @@ export class SchedulePage implements OnInit, AfterViewInit {
     }
   }
 
-  async getCurrentLocation() {
-    // const toast3 = await this.toastCtrl.create({
-    //   message: `started1`,
-    // });
-    // await toast3.present();
+  // async getCurrentLocation() {
+  //   try {
+  //     const position = await getPositionWithRetry();
+  //     console.log(
+  //       `Latitude: ${position.coords.latitude}, Longitude: ${position.coords.longitude}`
+  //     );
+  //     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${this.apiKey}`;
+  //     this.plotMap(position.coords);
+  //     const mockPosition = {
+  //       coords: {
+  //         latitude: position.coords ? position.coords.latitude : 19.075984,
+  //         longitude: position.coords ? position.coords.longitude : 72.877656,
+  //       },
+  //     };
+  //     console.log(
+  //       "this is mocked position when trying to call location :",
+  //       mockPosition
+  //     );
 
-    // const coordinates = await Geolocation.getCurrentPosition();
-    // console.log("Current position:", coordinates);
-    // const toast2 = await this.toastCtrl.create({
-    //   message: `Latitude: ${coordinates}`,
-    // });
-    // await toast2.present();
-
-    // try {
-
-    try {
-      const position = await getPositionWithRetry();
-      console.log(
-        `Latitude: ${position.coords.latitude}, Longitude: ${position.coords.longitude}`
-      );
-      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${this.apiKey}`;
-      this.plotMap(position.coords);
-      const mockPosition = {
-        coords: {
-          latitude: position.coords ? position.coords.latitude : 19.075984,
-          longitude: position.coords ? position.coords.longitude : 72.877656,
-        },
-      };
-      console.log(
-        "this is mocked position when trying to call location :",
-        mockPosition
-      );
-
-      if (this.isWithinBounds(mockPosition)) {
-        console.log(
-          "Position is within the specified bounds. Triggering action..."
-        );
-        // Your action here
-      } else {
-        console.log("Position is outside the specified bounds.");
-      }
-      try {
-        const response = await fetch(url);
-        const data = await response.json();
-        if (data.results.length > 0) {
-          const address = data.results[0].formatted_address;
-          console.log(`Address in gettin current locatiomn : ${address}`);
-        } else {
-          console.log("No results found");
-        }
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    } catch (error) {
-      console.error("Failed to get position:", error);
-    }
-
-    // console.log(this.position);
-
-    // const toast = await this.toastCtrl.create({
-    //   message: `Latitude: ${latitude}, Longitude: ${longitude}`,
-    //   duration: 3000,
-    //   position: "bottom",
-    // });
-    // await toast.present();
-    // } catch (error) {
-    //   const toast1 = await this.toastCtrl.create({
-    //     message: error.toString(),
-    //   });
-    //   await toast1.present();
-    //   console.error("Error getting location:", error);
-    //   const toast = await this.toastCtrl.create({
-    //     message: `Error getting location: ${error.message}`,
-    //     duration: 3000,
-    //     position: "bottom",
-    //   });
-    //   await toast1.present();
-    // }
-
-    // Example usage with a mock position
-    // const mockPosition = {
-    //   coords: {
-    //     latitude: 40.709,
-    //     longitude: -74.01,
-    //   },
-    // };
-    // console.log("**");
-    // console.log("**");
-    // console.log("**");
-    // console.log("**");
-
-    // if (this.isWithinBounds(mockPosition)) {
-    //   console.log(
-    //     "Position is within the specified bounds. Triggering action..."
-    //   );
-    //   // Your action here
-    // } else {
-    //   console.log("Position is outside the specified bounds.");
-    // }
-  }
+  //     try {
+  //       const response = await fetch(url);
+  //       const data = await response.json();
+  //       if (data.results.length > 0) {
+  //         const address = data.results[0].formatted_address;
+  //         console.log(`Address in gettin current locatiomn : ${address}`);
+  //       } else {
+  //         console.log("No results found");
+  //       }
+  //     } catch (error) {
+  //       console.error("Error:", error);
+  //     }
+  //   } catch (error) {
+  //     console.error("Failed to get position:", error);
+  //   }
+  // }
   getCoordsFromLocation(
     location: string
   ): { latitude: number; longitude: number } | null {
@@ -391,65 +327,65 @@ export class SchedulePage implements OnInit, AfterViewInit {
       console.error("Coordinates for location not found.");
     }
   }
-  async plotMap(coords?) {
-    const appEl = this.doc.querySelector("ion-app");
-    let isDark = false;
-    let style = [];
-    if (appEl.classList.contains("ion-palette-dark")) {
-      style = darkStyle;
-    }
+  // async plotMap(coords?) {
+  //   const appEl = this.doc.querySelector("ion-app");
+  //   let isDark = false;
+  //   let style = [];
+  //   if (appEl.classList.contains("ion-palette-dark")) {
+  //     style = darkStyle;
+  //   }
 
-    const googleMaps = await getGoogleMaps(this.apiKey);
+  //   const googleMaps = await getGoogleMaps(this.apiKey);
 
-    let map;
-    const centerCoords = coords
-      ? { lat: coords.latitude, lng: coords.longitude }
-      : { lat: 19.075984, lng: 72.877656 };
+  //   let map;
+  //   const centerCoords = coords
+  //     ? { lat: coords.latitude, lng: coords.longitude }
+  //     : { lat: 19.075984, lng: 72.877656 };
 
-    const mapEle = this.mapElement.nativeElement;
+  //   const mapEle = this.mapElement.nativeElement;
 
-    map = new googleMaps.Map(mapEle, {
-      center: centerCoords,
-      zoom: 16,
-      styles: style,
-    });
+  //   map = new googleMaps.Map(mapEle, {
+  //     center: centerCoords,
+  //     zoom: 16,
+  //     styles: style,
+  //   });
 
-    const infoWindow = new googleMaps.InfoWindow({
-      content: `<h5>test test</h5>`,
-    });
+  //   const infoWindow = new googleMaps.InfoWindow({
+  //     content: `<h5>test test</h5>`,
+  //   });
 
-    const marker = new googleMaps.Marker({
-      position: centerCoords,
-      map,
-      title: "markerData.name",
-    });
+  //   const marker = new googleMaps.Marker({
+  //     position: centerCoords,
+  //     map,
+  //     title: "markerData.name",
+  //   });
 
-    marker.addListener("click", () => {
-      infoWindow.open(map, marker);
-    });
+  //   marker.addListener("click", () => {
+  //     infoWindow.open(map, marker);
+  //   });
 
-    googleMaps.event.addListenerOnce(map, "idle", () => {
-      mapEle.classList.add("show-map");
-    });
+  //   googleMaps.event.addListenerOnce(map, "idle", () => {
+  //     mapEle.classList.add("show-map");
+  //   });
 
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === "class") {
-          const el = mutation.target as HTMLElement;
-          isDark = el.classList.contains("ion-palette-dark");
-          if (map && isDark) {
-            map.setOptions({ styles: darkStyle });
-          } else if (map) {
-            map.setOptions({ styles: [] });
-          }
-        }
-      });
-    });
+  //   const observer = new MutationObserver((mutations) => {
+  //     mutations.forEach((mutation) => {
+  //       if (mutation.attributeName === "class") {
+  //         const el = mutation.target as HTMLElement;
+  //         isDark = el.classList.contains("ion-palette-dark");
+  //         if (map && isDark) {
+  //           map.setOptions({ styles: darkStyle });
+  //         } else if (map) {
+  //           map.setOptions({ styles: [] });
+  //         }
+  //       }
+  //     });
+  //   });
 
-    observer.observe(appEl, {
-      attributes: true,
-    });
-  }
+  //   observer.observe(appEl, {
+  //     attributes: true,
+  //   });
+  // }
 
   async ngAfterViewInit() {
     // this.plotMap();
@@ -472,7 +408,7 @@ export class SchedulePage implements OnInit, AfterViewInit {
     const googleMaps = await this.initializeGoogleMaps();
     const mockPosition = await this.getMockPosition();
     this.map = this.createMap(googleMaps, mockPosition);
-    this.addMarker(googleMaps, mockPosition);
+    this.addMarker(googleMaps, mockPosition, this.map);
     this.setupClickListener(googleMaps);
     this.watchPosition(googleMaps);
   }
@@ -499,16 +435,17 @@ export class SchedulePage implements OnInit, AfterViewInit {
       lat: mockPosition.coords.latitude,
       lng: mockPosition.coords.longitude,
     };
+
     return new googleMaps.Map(mapEle, {
       center: centerCoords,
       zoom: 13,
+      mapId: "DEMO_MAP_ID", // Map ID is required for advanced markers.
     });
   }
 
-  addMarker(googleMaps, mockPosition) {
+  addMarker(googleMaps, mockPosition, map) {
     console.log("mockPosition :");
     console.log("mockPosition :", mockPosition);
-
     const marker = new googleMaps.Marker({
       position: {
         lat: mockPosition?.lat
@@ -518,8 +455,9 @@ export class SchedulePage implements OnInit, AfterViewInit {
           ? mockPosition.lng
           : mockPosition.coords.longitude,
       },
-      map: this.map,
+      map: map,
       title: "markerData.name",
+      content: "content",
     });
 
     const infoWindow = new googleMaps.InfoWindow({
@@ -527,7 +465,7 @@ export class SchedulePage implements OnInit, AfterViewInit {
     });
 
     marker.addListener("click", () => {
-      infoWindow.open(this.map, marker);
+      infoWindow.open(map, marker);
     });
   }
 
@@ -594,19 +532,58 @@ export class SchedulePage implements OnInit, AfterViewInit {
 
     const mockPosition = await this.getMockPosition(); // Use the updated mockPosition
     const isInPolygon = await this.isWithinPolygon(mockPosition);
-    this.handlePolygonCheck(isInPolygon);
+    await this.handlePolygonCheck(isInPolygon);
   }
+  private currentToast: HTMLIonToastElement | null = null;
 
-  handlePolygonCheck(isInPolygon) {
+  async handlePolygonCheck(isInPolygon) {
     console.log("I am in handle polygin check :", isInPolygon);
 
     if (isInPolygon) {
-      console.log(
-        "Position is within the polygon bounds. Triggering action..."
-      );
+      console.log("someone is in the area, Do something");
       // Your action here
     } else {
-      console.log("Position is outside the polygon bounds.");
+      console.log("someone left your area");
+    }
+    if (this.currentToast) {
+      await this.currentToast.dismiss();
+    }
+    if (isInPolygon) {
+      console.log("someone is in the area, Do something");
+
+      // Create a toast for being within the polygon
+      this.currentToast = await this.toastCtrl.create({
+        header: "someone is in the area. Do something.",
+        duration: 3000,
+        buttons: [
+          {
+            text: "Close",
+            role: "cancel",
+          },
+        ],
+      });
+
+      // Present the toast at the bottom of the page
+      await this.currentToast.present();
+
+      // Your action here
+    } else {
+      console.log("someone left your area");
+
+      // Create a toast for being outside the polygon
+      this.currentToast = await this.toastCtrl.create({
+        header: "someone left your area",
+        duration: 3000,
+        buttons: [
+          {
+            text: "Close",
+            role: "cancel",
+          },
+        ],
+      });
+
+      // Present the toast at the bottom of the page
+      await this.currentToast.present();
     }
   }
 
@@ -645,14 +622,15 @@ export class SchedulePage implements OnInit, AfterViewInit {
     const latLng = new googleMaps.LatLng(position.lat, position.lng);
 
     console.log("this.polygons :", this.polygons);
-
-    // Check if the position is within any of the polygons
-    for (const polygon of this.polygons) {
-      if (googleMaps.geometry.poly.containsLocation(latLng, polygon)) {
-        return true;
+    if (this.polygons.length > 0) {
+      // Check if the position is within any of the polygons
+      for (const polygon of this.polygons) {
+        if (googleMaps.geometry.poly.containsLocation(latLng, polygon)) {
+          return true;
+        }
       }
+      return false;
     }
-    return false;
   }
 
   handleAction() {

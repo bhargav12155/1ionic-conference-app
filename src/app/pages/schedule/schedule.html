@@ -43,25 +43,41 @@
 
 
         <ion-list #scheduleList [hidden]="shownSessions === 0" class="width-200">
-            <div>
-                <h1>Device Details</h1>
-                <p>IP Address: {{ ipAddress }}</p>
-                <p>Device: {{ deviceInfo?.device }}</p>
-                <p>Operating System: {{ deviceInfo?.os }}</p>
-                <p>OS Version: {{ deviceInfo?.os_version }}</p>
-                <p>Browser: {{ deviceInfo?.browser }}</p>
-                <p>Browser Version: {{ deviceInfo?.browser_version }}</p>
-                <p>Is Mobile: {{ isMobile() }}</p>
-                <p>Is Tablet: {{ isTablet() }}</p>
-                <p>Is Desktop: {{ isDesktop() }}</p>
-                <p>
-                    stopMonitoring
-                </p>
-                <p>
-                    list montitored
-                </p>
+            <h1>Device Details</h1>
 
-            </div>
+            <ul *ngIf="ipAddress; else noIpAddress">
+                <li><strong>IP Address:</strong> {{ ipAddress }}</li>
+            </ul>
+            <ng-template #noIpAddress>
+                <p>No IP address available.</p>
+            </ng-template>
+
+            <ul *ngIf="deviceInfo; else noDeviceInfo">
+                <li><strong>Device:</strong> {{ deviceInfo.device || 'Unknown' }}</li>
+                <li><strong>Operating System:</strong> {{ deviceInfo.os || 'Unknown' }}</li>
+                <li><strong>OS Version:</strong> {{ deviceInfo.os_version || 'Unknown' }}</li>
+                <li><strong>Browser:</strong> {{ deviceInfo.browser || 'Unknown' }}</li>
+                <li><strong>Browser Version:</strong> {{ deviceInfo.browser_version || 'Unknown' }}</li>
+                <li><strong>Is Mobile:</strong> {{ isMobile() }}</li>
+                <li><strong>Is Tablet:</strong> {{ isTablet() }}</li>
+                <li><strong>Is Desktop:</strong> {{ isDesktop() }}</li>
+            </ul>
+            <ng-template #noDeviceInfo>
+                <p>No device information available.</p>
+            </ng-template>
+
+            <ul *ngIf="deviceInfo1; else noDeviceInfo1">
+                <li><strong>Model:</strong> {{ deviceInfo1.model || 'Unknown' }}</li>
+                <li><strong>Platform:</strong> {{ deviceInfo1.platform || 'Unknown' }}</li>
+                <li><strong>OS Version:</strong> {{ deviceInfo1.osVersion || 'Unknown' }}</li>
+                <li><strong>UUID:</strong> {{ deviceInfo1.uuid || 'Unknown' }}</li>
+                <li><strong>Manufacturer:</strong> {{ deviceInfo1.manufacturer || 'Unknown' }}</li>
+                <li><strong>Is Virtual:</strong> {{ deviceInfo1.isVirtual ? 'Yes' : 'No' }}</li>
+            </ul>
+            <ng-template #noDeviceInfo1>
+                <p>No additional device information available.</p>
+            </ng-template>
+
 
             <ion-item-group *ngFor="let group of groups" [hidden]="group.hide">
                 <ion-item-divider sticky>
@@ -95,10 +111,9 @@
         <ion-content>
             <div #mapPlotting id="map-poly" class="map-canvas"></div>
 
-            <!-- <div #mapPlotting class="map-canvas"></div> -->
 
         </ion-content>
-        <button (click)="handleAction()">start new location</button>
+        <!-- <button (click)="handleAction()">start new location</button> -->
 
     </div>
 

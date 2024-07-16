@@ -3,7 +3,10 @@ ion-menu ion-content {
   --padding-bottom: 20px;
   --background: var(--ion-item-background, var(--ion-background-color, #ffffff));
 }
+ion-menu{
+  width: 5vw;
 
+}
 /* Remove background transitions for switching themes */
 ion-menu ion-item {
   --transition: none;

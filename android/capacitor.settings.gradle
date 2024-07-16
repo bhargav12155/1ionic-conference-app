@@ -7,9 +7,3 @@ project(':capacitor-device').projectDir = new File('../node_modules/@capacitor/d
 
 include ':capacitor-geolocation'
 project(':capacitor-geolocation').projectDir = new File('../node_modules/@capacitor/geolocation/android')
-
-include ':capacitor-geofence'
-project(':capacitor-geofence').projectDir = new File('../node_modules/capacitor-geofence/android')
-
-include ':capacitor-geofencing'
-project(':capacitor-geofencing').projectDir = new File('../node_modules/capacitor-geofencing/android/capacitor-geofencing')
