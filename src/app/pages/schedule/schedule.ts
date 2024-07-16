@@ -18,6 +18,7 @@ import {
   Config,
 } from "@ionic/angular";
 import { lastValueFrom } from "rxjs";
+import { Loader } from "@googlemaps/js-api-loader";
 
 import { Device } from "@capacitor/device";
 import { darkStyle } from "../../pages/map/map-dark-style";
@@ -249,7 +250,7 @@ export class SchedulePage implements OnInit, AfterViewInit {
             }
           }
           // Plot the new point on the map
-          this.addMarker(googleMaps, currentPosition, this.map);
+          // this.addMarker(googleMaps, currentPosition, this.map);
           this.map.setCenter(currentPosition);
         });
       }
@@ -455,6 +456,7 @@ export class SchedulePage implements OnInit, AfterViewInit {
           ? mockPosition.lng
           : mockPosition.coords.longitude,
       },
+      draggable: true,
       map: map,
       title: "markerData.name",
       content: "content",
@@ -467,6 +469,28 @@ export class SchedulePage implements OnInit, AfterViewInit {
     marker.addListener("click", () => {
       infoWindow.open(map, marker);
     });
+
+    googleMaps.event.addListener(marker, "dragend", () =>
+      this.updatePosition(marker)
+    );
+  }
+  async updatePosition(marker) {
+    console.log("Position has changed");
+    console.log(marker.getPosition().toJSON()); // Converts LatLng to a JSON object
+
+    const currentPosition = {
+      lat: marker.getPosition().toJSON().lat,
+      lng: marker.getPosition().toJSON().lng,
+    };
+    if (this.polygons.length > 0) {
+      try {
+        const isInAnyPolygon = await this.isWithinPolygon(currentPosition);
+
+        await this.handlePolygonCheck(isInAnyPolygon);
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    }
   }
 
   async setupClickListener(googleMaps) {
@@ -588,28 +612,28 @@ export class SchedulePage implements OnInit, AfterViewInit {
   }
 
   // Function to check if the current position is within any polygon
-  async isWithinAnyPolygon(position) {
-    return this.polygons.some((polygon) =>
-      this.isLocationInPolygon(position, polygon)
-    );
-  }
+  // async isWithinAnyPolygon(position) {
+  //   return this.polygons.some((polygon) =>
+  //     this.isLocationInPolygon(position, polygon)
+  //   );
+  // }
   // Function to check if a location is within a specific polygon
-  isLocationInPolygon(location, polygon) {
-    const paths = polygon.getPath();
-    let inside = false;
-    for (let i = 0, j = paths.getLength() - 1; i < paths.getLength(); j = i++) {
-      const xi = paths.getAt(i).lat(),
-        yi = paths.getAt(i).lng();
-      const xj = paths.getAt(j).lat(),
-        yj = paths.getAt(j).lng();
+  // isLocationInPolygon(location, polygon) {
+  //   const paths = polygon.getPath();
+  //   let inside = false;
+  //   for (let i = 0, j = paths.getLength() - 1; i < paths.getLength(); j = i++) {
+  //     const xi = paths.getAt(i).lat(),
+  //       yi = paths.getAt(i).lng();
+  //     const xj = paths.getAt(j).lat(),
+  //       yj = paths.getAt(j).lng();
 
-      const intersect =
-        yi > location.lng !== yj > location.lng &&
-        location.lat < ((xj - xi) * (location.lng - yi)) / (yj - yi) + xi;
-      if (intersect) inside = !inside;
-    }
-    return inside;
-  }
+  //     const intersect =
+  //       yi > location.lng !== yj > location.lng &&
+  //       location.lat < ((xj - xi) * (location.lng - yi)) / (yj - yi) + xi;
+  //     if (intersect) inside = !inside;
+  //   }
+  //   return inside;
+  // }
 
   async isWithinPolygon(position) {
     console.log("Checking polygon bounds");
