@@ -57,6 +57,7 @@ export class SchedulePage implements OnInit, AfterViewInit {
   ipAddress: string;
   polygons: any = [];
   deviceInfo1: any;
+  polygonsForMapPlotting: any = [];
 
   constructor(
     @Inject(DOCUMENT) private doc: Document,
@@ -160,6 +161,15 @@ export class SchedulePage implements OnInit, AfterViewInit {
       console.error("Error fetching IP address or device info:", error);
     }
   }
+  isNavExpanded: boolean = false;
+
+  toggleNav() {
+    this.isNavExpanded = !this.isNavExpanded;
+  }
+
+  toggleGroup(group) {
+    group.collapsed = !group.collapsed;
+  }
 
   isMobile(): boolean {
     return this.deviceService.isMobile();
@@ -232,14 +242,13 @@ export class SchedulePage implements OnInit, AfterViewInit {
             lat: position.coords.latitude,
             lng: position.coords.longitude,
           };
-          if (this.polygons.length > 0) {
+          if (this.polygonsForMapPlotting.length > 0) {
             try {
               const isInAnyPolygon = await this.isWithinPolygon(
                 currentPosition
               );
 
               await this.handlePolygonCheck(isInAnyPolygon);
-
               const address = await this.getAddressFromCoordinates(
                 position.coords.latitude,
                 position.coords.longitude
@@ -403,7 +412,6 @@ export class SchedulePage implements OnInit, AfterViewInit {
     fab.close();
   }
   map;
-  polygon;
 
   async initPolygonMap() {
     const googleMaps = await this.initializeGoogleMaps();
@@ -475,14 +483,21 @@ export class SchedulePage implements OnInit, AfterViewInit {
     );
   }
   async updatePosition(marker) {
-    console.log("Position has changed");
-    console.log(marker.getPosition().toJSON()); // Converts LatLng to a JSON object
+    // console.log("Position has changed");
+    // console.log(marker.getPosition().toJSON()); // Converts LatLng to a JSON object
 
     const currentPosition = {
       lat: marker.getPosition().toJSON().lat,
       lng: marker.getPosition().toJSON().lng,
     };
-    if (this.polygons.length > 0) {
+
+    const address = await this.getAddressFromCoordinates(
+      currentPosition.lat,
+      currentPosition.lng
+    );
+    console.log(`Waits and gets the reverse address =: ${address}`);
+
+    if (this.polygonsForMapPlotting.length > 0) {
       try {
         const isInAnyPolygon = await this.isWithinPolygon(currentPosition);
 
@@ -512,7 +527,6 @@ export class SchedulePage implements OnInit, AfterViewInit {
         console.log("******");
         console.log("******");
         console.log("******");
-        // await this.handlePolygonCreation(googleMaps,gotPolygonCoords);
       }
 
       gotPolygonCoords.push({
@@ -527,15 +541,26 @@ export class SchedulePage implements OnInit, AfterViewInit {
       }
 
       clickTimeout = setTimeout(async () => {
-        if (gotPolygonCoords.length > 0) {
+        if (gotPolygonCoords.length > 3) {
           await this.handlePolygonCreation(googleMaps, gotPolygonCoords);
           gotPolygonCoords = [];
-          // this.polygons.push(gotPolygonCoords);
+          // this.polygonsForMapPlotting.push(gotPolygonCoords);
+        } else {
+          console.log("more points needed to create an area");
+          this.showToast("More points needed to create an area");
         }
       }, 2000);
 
       lastClickTime = currentTime;
     });
+  }
+  async showToast(message: string) {
+    const toast = await this.toastCtrl.create({
+      message: message,
+      duration: 2000,
+      position: "top",
+    });
+    toast.present();
   }
 
   async handlePolygonCreation(googleMaps, coords) {
@@ -549,10 +574,12 @@ export class SchedulePage implements OnInit, AfterViewInit {
       strokeWeight: 2,
       fillColor: "green",
       fillOpacity: 0.35,
+      content: this.polygons.length - 1,
     });
 
     polygon.setMap(this.map);
-    this.polygons.push(polygon); // Store the created polygon
+    this.polygonsForMapPlotting.push(polygon); // Store the created polygon
+    this.polygons.push(coords); // Store the created polygon
 
     const mockPosition = await this.getMockPosition(); // Use the updated mockPosition
     const isInPolygon = await this.isWithinPolygon(mockPosition);
@@ -613,7 +640,7 @@ export class SchedulePage implements OnInit, AfterViewInit {
 
   // Function to check if the current position is within any polygon
   // async isWithinAnyPolygon(position) {
-  //   return this.polygons.some((polygon) =>
+  //   return this.polygonsForMapPlotting.some((polygon) =>
   //     this.isLocationInPolygon(position, polygon)
   //   );
   // }
@@ -645,10 +672,10 @@ export class SchedulePage implements OnInit, AfterViewInit {
     // Create a LatLng object from the position coordinates
     const latLng = new googleMaps.LatLng(position.lat, position.lng);
 
-    console.log("this.polygons :", this.polygons);
-    if (this.polygons.length > 0) {
+    console.log("this.polygonsForMapPlotting :", this.polygonsForMapPlotting);
+    if (this.polygonsForMapPlotting.length > 0) {
       // Check if the position is within any of the polygons
-      for (const polygon of this.polygons) {
+      for (const polygon of this.polygonsForMapPlotting) {
         if (googleMaps.geometry.poly.containsLocation(latLng, polygon)) {
           return true;
         }

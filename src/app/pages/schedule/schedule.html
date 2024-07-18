@@ -40,81 +40,98 @@
         </ion-toolbar>
     </ion-header>
     <div class="col-2">
+        <ion-list #scheduleList [hidden]="shownSessions === 0" [ngClass]="{ 'collapsed': !isNavExpanded }"
+            class="side-nav">
+            <h1 (click)="toggleNav()" style="cursor: pointer;">Device Details</h1>
 
+            <div *ngIf="isNavExpanded">
+                <ul *ngIf="ipAddress; else noIpAddress">
+                    <li><strong>IP Address:</strong> {{ ipAddress }}</li>
+                </ul>
+                <ng-template #noIpAddress>
+                    <p>No IP address available.</p>
+                </ng-template>
 
-        <ion-list #scheduleList [hidden]="shownSessions === 0" class="width-200">
-            <h1>Device Details</h1>
+                <ul *ngIf="deviceInfo; else noDeviceInfo">
+                    <li><strong>Device:</strong> {{ deviceInfo.device || 'Unknown' }}</li>
+                    <li><strong>Operating System:</strong> {{ deviceInfo.os || 'Unknown' }}</li>
+                    <li><strong>OS Version:</strong> {{ deviceInfo.os_version || 'Unknown' }}</li>
+                    <li><strong>Browser:</strong> {{ deviceInfo.browser || 'Unknown' }}</li>
+                    <li><strong>Browser Version:</strong> {{ deviceInfo.browser_version || 'Unknown' }}</li>
+                    <li><strong>Is Mobile:</strong> {{ isMobile() }}</li>
+                    <li><strong>Is Tablet:</strong> {{ isTablet() }}</li>
+                    <li><strong>Is Desktop:</strong> {{ isDesktop() }}</li>
+                </ul>
+                <ng-template #noDeviceInfo>
+                    <p>No device information available.</p>
+                </ng-template>
 
-            <ul *ngIf="ipAddress; else noIpAddress">
-                <li><strong>IP Address:</strong> {{ ipAddress }}</li>
-            </ul>
-            <ng-template #noIpAddress>
-                <p>No IP address available.</p>
-            </ng-template>
+                <ul *ngIf="deviceInfo1; else noDeviceInfo1">
+                    <li><strong>Model:</strong> {{ deviceInfo1.model || 'Unknown' }}</li>
+                    <li><strong>Platform:</strong> {{ deviceInfo1.platform || 'Unknown' }}</li>
+                    <li><strong>OS Version:</strong> {{ deviceInfo1.osVersion || 'Unknown' }}</li>
+                    <li><strong>UUID:</strong> {{ deviceInfo1.uuid || 'Unknown' }}</li>
+                    <li><strong>Manufacturer:</strong> {{ deviceInfo1.manufacturer || 'Unknown' }}</li>
+                    <li><strong>Is Virtual:</strong> {{ deviceInfo1.isVirtual ? 'Yes' : 'No' }}</li>
+                </ul>
+                <ng-template #noDeviceInfo1>
+                    <p>No additional device information available.</p>
+                </ng-template>
+            </div>
 
-            <ul *ngIf="deviceInfo; else noDeviceInfo">
-                <li><strong>Device:</strong> {{ deviceInfo.device || 'Unknown' }}</li>
-                <li><strong>Operating System:</strong> {{ deviceInfo.os || 'Unknown' }}</li>
-                <li><strong>OS Version:</strong> {{ deviceInfo.os_version || 'Unknown' }}</li>
-                <li><strong>Browser:</strong> {{ deviceInfo.browser || 'Unknown' }}</li>
-                <li><strong>Browser Version:</strong> {{ deviceInfo.browser_version || 'Unknown' }}</li>
-                <li><strong>Is Mobile:</strong> {{ isMobile() }}</li>
-                <li><strong>Is Tablet:</strong> {{ isTablet() }}</li>
-                <li><strong>Is Desktop:</strong> {{ isDesktop() }}</li>
-            </ul>
-            <ng-template #noDeviceInfo>
-                <p>No device information available.</p>
-            </ng-template>
-
-            <ul *ngIf="deviceInfo1; else noDeviceInfo1">
-                <li><strong>Model:</strong> {{ deviceInfo1.model || 'Unknown' }}</li>
-                <li><strong>Platform:</strong> {{ deviceInfo1.platform || 'Unknown' }}</li>
-                <li><strong>OS Version:</strong> {{ deviceInfo1.osVersion || 'Unknown' }}</li>
-                <li><strong>UUID:</strong> {{ deviceInfo1.uuid || 'Unknown' }}</li>
-                <li><strong>Manufacturer:</strong> {{ deviceInfo1.manufacturer || 'Unknown' }}</li>
-                <li><strong>Is Virtual:</strong> {{ deviceInfo1.isVirtual ? 'Yes' : 'No' }}</li>
-            </ul>
-            <ng-template #noDeviceInfo1>
-                <p>No additional device information available.</p>
-            </ng-template>
-
-
-            <ion-item-group *ngFor="let group of groups" [hidden]="group.hide">
-                <ion-item-divider sticky>
+            <div *ngFor="let group of groups">
+                <ion-item-divider sticky (click)="toggleGroup(group)">
                     <ion-label> {{group.time}} </ion-label>
                 </ion-item-divider>
 
-                <ion-item-sliding *ngFor="let session of group.sessions" #slidingItem
-                    [attr.track]="session.tracks[0] | lowercase" [hidden]="session.hide">
-                    <ion-item>
-                        <ion-label (click)="updateMap(session)">
-                            <h3>{{session.name}}</h3>
-                            <p>
-                                {{session.timeStart}} — {{session.timeEnd}}
-                            </p>
-                        </ion-label>
-                    </ion-item>
-                    <ion-item-options>
-                        <ion-item-option color="favorite" (click)="addFavorite(slidingItem, session)"
-                            *ngIf="segment === 'all'">
-                            Favorite
-                        </ion-item-option>
-                        <ion-item-option color="danger"
-                            (click)="removeFavorite(slidingItem, session, 'Remove Favorite')"
-                            *ngIf="segment === 'favorites'">
-                            Remove
-                        </ion-item-option>
-                    </ion-item-options>
-                </ion-item-sliding>
-            </ion-item-group>
-        </ion-list>
-        <ion-content>
-            <div #mapPlotting id="map-poly" class="map-canvas"></div>
-
-            <!-- <div #mapPlotting class="map-canvas"></div> -->
-            <div *ngFor="let item of polygons">
+                <div [ngClass]="{ 'collapsed': group.collapsed }">
+                    <ion-item-sliding *ngFor="let session of group.sessions" #slidingItem
+                        [attr.track]="session.tracks[0] | lowercase" [hidden]="session.hide">
+                        <ion-item>
+                            <ion-label (click)="updateMap(session)">
+                                <h3>{{session.name}}</h3>
+                                <p>
+                                    {{session.timeStart}} — {{session.timeEnd}}
+                                </p>
+                            </ion-label>
+                        </ion-item>
+                        <ion-item-options>
+                            <ion-item-option color="favorite" (click)="addFavorite(slidingItem, session)"
+                                *ngIf="segment === 'all'">
+                                Favorite
+                            </ion-item-option>
+                            <ion-item-option color="danger"
+                                (click)="removeFavorite(slidingItem, session, 'Remove Favorite')"
+                                *ngIf="segment === 'favorites'">
+                                Remove
+                            </ion-item-option>
+                        </ion-item-options>
+                    </ion-item-sliding>
+                </div>
             </div>
-        </ion-content>
+        </ion-list>
+
+
+        <div class="map-container" [ngClass]="{ 'map-container-full': isNavExpanded }">
+            <div #mapPlotting id="map-poly" class="map-canvas"></div>
+            <div class="polygons">
+                <div (click)="toggleNav()" class="toggle-button" style="cursor: pointer;">
+                    {{ isNavExpanded ? 'Collapse' : 'Expand' }}
+                </div>
+                <div *ngIf="isNavExpanded">
+                    <div *ngFor="let polygon of polygons; let i = index">
+                        <div>Area {{ i + 1 }}:</div>
+                        <div *ngFor="let coord of polygon">
+                            Latitude: {{ coord.lat | number: '1.2-2' }}, Longitude: {{ coord.lng | number: '1.2-2' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+
         <!-- <button (click)="handleAction()">start new location</button> -->
 
     </div>
