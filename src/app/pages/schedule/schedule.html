@@ -115,9 +115,11 @@
         <div class="map-container" [ngClass]="{ 'map-container-full': isNavExpanded }">
             <div #mapPlotting id="map-poly" class="map-canvas"></div>
             <div class="polygons">
-                <div (click)="toggleNav()" class="toggle-button" style="cursor: pointer;">
+                <ion-button (click)="toggleNav()" class="toggle-button" style="cursor: pointer;">
                     {{ isNavExpanded ? 'Collapse' : 'Expand' }}
-                </div>
+                </ion-button>
+                <ion-button (click)="clearMap()">Clear Map</ion-button>
+
                 <div *ngIf="isNavExpanded">
                     <div *ngFor="let polygon of polygons; let i = index">
                         <div>Area {{ i + 1 }}:</div>

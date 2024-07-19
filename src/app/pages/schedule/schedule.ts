@@ -58,6 +58,10 @@ export class SchedulePage implements OnInit, AfterViewInit {
   polygons: any = [];
   deviceInfo1: any;
   polygonsForMapPlotting: any = [];
+  marker: any;
+  wasInPolygon: boolean;
+  enterSound: HTMLAudioElement;
+  exitSound: HTMLAudioElement;
 
   constructor(
     @Inject(DOCUMENT) private doc: Document,
@@ -74,7 +78,11 @@ export class SchedulePage implements OnInit, AfterViewInit {
     private deviceService: DeviceDetectorService,
     private http: HttpClient,
     private platform: Platform
-  ) {}
+  ) {
+    this.wasInPolygon = false; // Initialize audio objects with correct path
+    this.enterSound = new Audio("/assets/sounds/chime.mp3");
+    this.exitSound = new Audio("/assets/sounds/chime.mp3");
+  }
 
   ngOnInit() {
     this.platform.ready().then(() => {
@@ -216,7 +224,7 @@ export class SchedulePage implements OnInit, AfterViewInit {
     await alert.present();
   }
 
-  watchPosition(googleMaps) {
+  watchPosition(googleMaps, map) {
     console.log("watchposition function");
 
     this.wait = Geolocation.watchPosition(
@@ -228,6 +236,22 @@ export class SchedulePage implements OnInit, AfterViewInit {
       async (position, err) => {
         console.log("position :", position);
         console.log("err in watch postion:", err);
+        // Show toast for position
+        if (position) {
+          this.showToast(
+            `Position: ${position.coords.latitude}, ${position.coords.longitude}`
+          );
+        }
+
+        // Show toast for error
+        if (err) {
+          this.showToast(`Error: ${err.message}`);
+          if (err.code === 3) {
+            console.error("Timeout expired while trying to get the position.");
+            // Optionally, handle timeout (e.g., use fallback)
+          }
+          return;
+        }
 
         if (err) {
           if (err.code === 3) {
@@ -259,8 +283,8 @@ export class SchedulePage implements OnInit, AfterViewInit {
             }
           }
           // Plot the new point on the map
-          // this.addMarker(googleMaps, currentPosition, this.map);
-          this.map.setCenter(currentPosition);
+          map.setCenter(currentPosition);
+          this.addMarker(googleMaps, currentPosition, map);
         });
       }
     );
@@ -419,7 +443,7 @@ export class SchedulePage implements OnInit, AfterViewInit {
     this.map = this.createMap(googleMaps, mockPosition);
     this.addMarker(googleMaps, mockPosition, this.map);
     this.setupClickListener(googleMaps);
-    this.watchPosition(googleMaps);
+    this.watchPosition(googleMaps, this.map);
   }
 
   async initializeGoogleMaps() {
@@ -447,22 +471,21 @@ export class SchedulePage implements OnInit, AfterViewInit {
 
     return new googleMaps.Map(mapEle, {
       center: centerCoords,
-      zoom: 13,
+      zoom: 19,
       mapId: "DEMO_MAP_ID", // Map ID is required for advanced markers.
     });
   }
+  addMarker(googleMaps, currentPosition, map) {
+    // Remove previous marker if it exists
+    if (this.marker) {
+      this.marker.setMap(null); // Remove marker from the map
+    }
 
-  addMarker(googleMaps, mockPosition, map) {
-    console.log("mockPosition :");
-    console.log("mockPosition :", mockPosition);
-    const marker = new googleMaps.Marker({
+    // Create new marker
+    this.marker = new googleMaps.Marker({
       position: {
-        lat: mockPosition?.lat
-          ? mockPosition.lat
-          : mockPosition.coords.latitude,
-        lng: mockPosition.lng
-          ? mockPosition.lng
-          : mockPosition.coords.longitude,
+        lat: currentPosition.lat,
+        lng: currentPosition.lng,
       },
       draggable: true,
       map: map,
@@ -471,17 +494,18 @@ export class SchedulePage implements OnInit, AfterViewInit {
     });
 
     const infoWindow = new googleMaps.InfoWindow({
-      content: `<h5>test test</h5>`,
+      content: `<h5>location</h5>`,
     });
 
-    marker.addListener("click", () => {
-      infoWindow.open(map, marker);
+    this.marker.addListener("click", () => {
+      infoWindow.open(map, this.marker);
     });
 
-    googleMaps.event.addListener(marker, "dragend", () =>
-      this.updatePosition(marker)
-    );
+    googleMaps.event.addListener(this.marker, "dragend", () => {
+      this.updatePosition(this.marker);
+    });
   }
+
   async updatePosition(marker) {
     // console.log("Position has changed");
     // console.log(marker.getPosition().toJSON()); // Converts LatLng to a JSON object
@@ -523,10 +547,6 @@ export class SchedulePage implements OnInit, AfterViewInit {
 
       if (timeDifference > 2000 && gotPolygonCoords.length > 0) {
         gotPolygonCoords = [];
-        console.log("******");
-        console.log("******");
-        console.log("******");
-        console.log("******");
       }
 
       gotPolygonCoords.push({
@@ -541,7 +561,7 @@ export class SchedulePage implements OnInit, AfterViewInit {
       }
 
       clickTimeout = setTimeout(async () => {
-        if (gotPolygonCoords.length > 3) {
+        if (gotPolygonCoords.length > 2) {
           await this.handlePolygonCreation(googleMaps, gotPolygonCoords);
           gotPolygonCoords = [];
           // this.polygonsForMapPlotting.push(gotPolygonCoords);
@@ -554,6 +574,17 @@ export class SchedulePage implements OnInit, AfterViewInit {
       lastClickTime = currentTime;
     });
   }
+  clearMap() {
+    if (this.marker) {
+      this.marker.setMap(null);
+      this.marker = null;
+    }
+    this.polygonsForMapPlotting.forEach((polygon) => {
+      polygon.setMap(null);
+    });
+    this.polygonsForMapPlotting = [];
+  }
+
   async showToast(message: string) {
     const toast = await this.toastCtrl.create({
       message: message,
@@ -579,7 +610,7 @@ export class SchedulePage implements OnInit, AfterViewInit {
 
     polygon.setMap(this.map);
     this.polygonsForMapPlotting.push(polygon); // Store the created polygon
-    this.polygons.push(coords); // Store the created polygon
+    this.polygons.push({ coords }); // Store the created polygon with area name
 
     const mockPosition = await this.getMockPosition(); // Use the updated mockPosition
     const isInPolygon = await this.isWithinPolygon(mockPosition);
@@ -588,19 +619,18 @@ export class SchedulePage implements OnInit, AfterViewInit {
   private currentToast: HTMLIonToastElement | null = null;
 
   async handlePolygonCheck(isInPolygon) {
-    console.log("I am in handle polygin check :", isInPolygon);
+    console.log("I am in handle polygon check:", isInPolygon);
+
+    if (this.currentToast) {
+      await this.currentToast.dismiss();
+      this.currentToast = null;
+    }
 
     if (isInPolygon) {
       console.log("someone is in the area, Do something");
-      // Your action here
-    } else {
-      console.log("someone left your area");
-    }
-    if (this.currentToast) {
-      await this.currentToast.dismiss();
-    }
-    if (isInPolygon) {
-      console.log("someone is in the area, Do something");
+      this.enterSound
+        .play()
+        .catch((error) => console.error("Error playing enter sound:", error));
 
       // Create a toast for being within the polygon
       this.currentToast = await this.toastCtrl.create({
@@ -617,50 +647,32 @@ export class SchedulePage implements OnInit, AfterViewInit {
       // Present the toast at the bottom of the page
       await this.currentToast.present();
 
-      // Your action here
+      // Update the state to indicate that the user is in the polygon
+      this.wasInPolygon = true;
     } else {
-      console.log("someone left your area");
+      if (this.wasInPolygon) {
+        console.log("someone left your area");
 
-      // Create a toast for being outside the polygon
-      this.currentToast = await this.toastCtrl.create({
-        header: "someone left your area",
-        duration: 3000,
-        buttons: [
-          {
-            text: "Close",
-            role: "cancel",
-          },
-        ],
-      });
+        // Create a toast for being outside the polygon
+        this.currentToast = await this.toastCtrl.create({
+          header: "someone left your area",
+          duration: 3000,
+          buttons: [
+            {
+              text: "Close",
+              role: "cancel",
+            },
+          ],
+        });
 
-      // Present the toast at the bottom of the page
-      await this.currentToast.present();
+        // Present the toast at the bottom of the page
+        await this.currentToast.present();
+
+        // Update the state to indicate that the user is no longer in the polygon
+        this.wasInPolygon = false;
+      }
     }
   }
-
-  // Function to check if the current position is within any polygon
-  // async isWithinAnyPolygon(position) {
-  //   return this.polygonsForMapPlotting.some((polygon) =>
-  //     this.isLocationInPolygon(position, polygon)
-  //   );
-  // }
-  // Function to check if a location is within a specific polygon
-  // isLocationInPolygon(location, polygon) {
-  //   const paths = polygon.getPath();
-  //   let inside = false;
-  //   for (let i = 0, j = paths.getLength() - 1; i < paths.getLength(); j = i++) {
-  //     const xi = paths.getAt(i).lat(),
-  //       yi = paths.getAt(i).lng();
-  //     const xj = paths.getAt(j).lat(),
-  //       yj = paths.getAt(j).lng();
-
-  //     const intersect =
-  //       yi > location.lng !== yj > location.lng &&
-  //       location.lat < ((xj - xi) * (location.lng - yi)) / (yj - yi) + xi;
-  //     if (intersect) inside = !inside;
-  //   }
-  //   return inside;
-  // }
 
   async isWithinPolygon(position) {
     console.log("Checking polygon bounds");
@@ -682,6 +694,34 @@ export class SchedulePage implements OnInit, AfterViewInit {
       }
       return false;
     }
+  }
+  async promptForAreaName() {
+    const alert = await this.alertCtrl.create({
+      header: "Name the Area",
+      inputs: [
+        {
+          name: "areaName",
+          type: "text",
+          placeholder: "Enter area name",
+        },
+      ],
+      buttons: [
+        {
+          text: "Cancel",
+          role: "cancel",
+        },
+        {
+          text: "OK",
+          handler: (data) => {
+            return data.areaName;
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+    const result = await alert.onDidDismiss();
+    return result.data.values.areaName;
   }
 
   handleAction() {
