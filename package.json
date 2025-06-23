@@ -35,7 +35,7 @@
     "@capacitor/core": "latest",
     "@capacitor/device": "^6.0.0",
     "@capacitor/geolocation": "^6.0.0",
-    "@capacitor/ios": "^6.0.0",
+    "@capacitor/ios": "^6.1.2",
     "@googlemaps/js-api-loader": "^1.16.6",
     "@ionic-native/core": "^5.36.0",
     "@ionic-native/geofence": "^5.36.0",
