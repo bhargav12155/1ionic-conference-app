@@ -70,36 +70,47 @@ code {
   font-family: monospace;
 }
 
-@media screen and (max-width: 600px) {
-  table {
+/* Responsive Table Styles */
+@media screen and (max-width: 768px) {
+  .table-container table {
     border: 0;
   }
 
-  table thead {
-    display: none;
+  .table-container table thead {
+    display: none; /* Hide headers on mobile */
   }
 
-  table tr {
+  .table-container table tr {
     display: block;
-    margin-bottom: 0.625em;
-    border: 1px solid var(--ion-color-medium-tint);
-    border-radius: 8px;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid var(--ion-color-medium-tint);
+  }
+  
+  .table-container table tr:last-child {
+    border-bottom: 0;
   }
 
-  table td {
+  .table-container table td {
     display: block;
     text-align: right;
-    border-bottom: 1px dotted var(--ion-color-medium-tint);
+    font-size: 0.9rem;
+    border-bottom: 1px dotted var(--ion-color-light-shade);
   }
 
-  table td::before {
+  .table-container table td:last-child {
+    border-bottom: 0;
+  }
+
+  .table-container table td::before {
     content: attr(data-label);
     float: left;
     font-weight: bold;
     text-transform: uppercase;
+    color: var(--ion-color-medium);
   }
 
-  table td:last-child {
-    border-bottom: 0;
+  /* Adjust chip alignment */
+  .table-container table td[data-label="Type"] {
+    padding-bottom: 8px;
   }
 }

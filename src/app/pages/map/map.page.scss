@@ -1,0 +1,18 @@
+#mapPlotting {
+  height: 70vh;
+  width: 100%;
+}
+
+.inside-geofence {
+  color: var(--ion-color-success);
+  font-weight: bold;
+}
+
+.outside-geofence {
+  color: var(--ion-color-danger);
+  font-weight: bold;
+}
+
+ion-card {
+  margin: 16px;
+}

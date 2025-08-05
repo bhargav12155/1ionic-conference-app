@@ -1,7 +1,6 @@
 import { NgModule } from "@angular/core";
 import { RouterModule, Routes } from "@angular/router";
 import { TabsPage } from "./tabs-page";
-import { SchedulePage } from "../schedule/schedule";
 
 const routes: Routes = [
   {
@@ -9,72 +8,25 @@ const routes: Routes = [
     component: TabsPage,
     children: [
       {
-        path: "schedule",
-        children: [
-          {
-            path: "",
-            component: SchedulePage,
-          },
-          {
-            path: "session/:sessionId",
-            loadChildren: () =>
-              import("../session-detail/session-detail.module").then(
-                (m) => m.SessionDetailModule
-              ),
-          },
-        ],
-      },
-      {
-        path: "speakers",
-        children: [
-          {
-            path: "",
-            loadChildren: () =>
-              import("../speaker-list/speaker-list.module").then(
-                (m) => m.SpeakerListModule
-              ),
-          },
-          {
-            path: "session/:sessionId",
-            loadChildren: () =>
-              import("../session-detail/session-detail.module").then(
-                (m) => m.SessionDetailModule
-              ),
-          },
-          {
-            path: "speaker-details/:speakerId",
-            loadChildren: () =>
-              import("../speaker-detail/speaker-detail.module").then(
-                (m) => m.SpeakerDetailModule
-              ),
-          },
-        ],
+        path: "users",
+        loadChildren: () =>
+          import("../users/users.module").then((m) => m.UsersPageModule),
       },
       {
         path: "map",
-        children: [
-          {
-            path: "",
-            loadChildren: () =>
-              import("../map/map.module").then((m) => m.MapModule),
-          },
-        ],
+        loadChildren: () =>
+          import("../map/map.module").then((m) => m.MapPageModule),
       },
       {
-        path: "activity",
-        children: [
-          {
-            path: "",
-            loadChildren: () =>
-              import("../activity-log/activity-log.module").then(
-                (m) => m.ActivityLogModule
-              ),
-          },
-        ],
+        path: "activity-log",
+        loadChildren: () =>
+          import("../activity-log/activity-log.module").then(
+            (m) => m.ActivityLogModule
+          ),
       },
       {
         path: "",
-        redirectTo: "/app/tabs/schedule",
+        redirectTo: "/app/tabs/map",
         pathMatch: "full",
       },
     ],
