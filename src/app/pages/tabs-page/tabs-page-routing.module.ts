@@ -61,12 +61,14 @@ const routes: Routes = [
         ],
       },
       {
-        path: "about",
+        path: "activity",
         children: [
           {
             path: "",
             loadChildren: () =>
-              import("../about/about.module").then((m) => m.AboutModule),
+              import("../activity-log/activity-log.module").then(
+                (m) => m.ActivityLogModule
+              ),
           },
         ],
       },

@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnInit, ViewChild } from "@angular/core";
 import { ConferenceData } from "../../providers/conference-data";
-import { Geolocation } from "@capacitor/geolocation";
+import { GeofenceService, UserInfo } from "../../providers/geofence.service";
 
 @Component({
   selector: "page-speaker-list",
@@ -8,59 +8,70 @@ import { Geolocation } from "@capacitor/geolocation";
   styleUrls: ["./speaker-list.scss"],
 })
 export class SpeakerListPage implements OnInit {
-  speakers: any[] = [];
-  position: any;
-  map: any;
-  lat: any;
-  lng: any;
-  watchId: Promise<string> | undefined;
+  currentUser: UserInfo | null = null;
+  usersInGeofence: UserInfo[] = [];
+  allUsers: UserInfo[] = [];
 
-  @ViewChild("map", { static: false }) mapElement: ElementRef;
-
-  constructor(public confData: ConferenceData) {}
+  constructor(
+    public confData: ConferenceData,
+    private geofenceService: GeofenceService
+  ) {}
 
   async ngOnInit() {
-    this.confData.getSpeakers().subscribe((speakers: any[]) => {
-      this.speakers = speakers;
-    });
-    try {
-      const permissionStatus = await Geolocation.checkPermissions();
-      if (permissionStatus.location === "denied") {
-        await Geolocation.requestPermissions();
-      }
-      this.watchPosition();
-    } catch (e) {
-      console.error(e);
+    // Initialize geofence service
+    await this.geofenceService.initializeCurrentUser();
+    this.geofenceService.simulateOtherUsers();
+
+    // Update data every 5 seconds
+    setInterval(() => {
+      this.updateUserData();
+    }, 5000);
+
+    this.updateUserData();
+  }
+
+  updateUserData() {
+    this.currentUser = this.geofenceService.getCurrentUser();
+    this.usersInGeofence = this.geofenceService.getUsersInGeofence();
+    this.allUsers = this.geofenceService.getUsers();
+  }
+
+  getStatusColor(status: string): string {
+    switch (status) {
+      case "inside":
+        return "success";
+      case "entering":
+        return "warning";
+      case "exiting":
+        return "warning";
+      case "outside":
+        return "medium";
+      default:
+        return "medium";
     }
   }
 
-  ionViewDidEnter() {
-    this.confData.getSpeakers().subscribe((speakers: any[]) => {
-      this.speakers = speakers;
-    });
+  getStatusText(status: string): string {
+    switch (status) {
+      case "inside":
+        return "Inside Geofence";
+      case "entering":
+        return "Entering...";
+      case "exiting":
+        return "Exiting...";
+      case "outside":
+        return "Outside Geofence";
+      default:
+        return "Unknown";
+    }
   }
 
-  async watchPosition() {
-    try {
-      this.watchId = Geolocation.watchPosition({}, (position, err) => {
-        if (position) {
-          this.lat = position.coords.latitude;
-          this.lng = position.coords.longitude;
-          console.log("Current position:", this.lat, this.lng);
-        }
-        if (err) {
-          console.error("Error watching position:", err);
-        }
-      });
-    } catch (e) {
-      console.error(e);
-    }
+  formatTimestamp(timestamp: number): string {
+    const date = new Date(timestamp);
+    return date.toLocaleString();
   }
 
   async ionViewWillLeave() {
-    if (this.watchId) {
-      const id = await this.watchId;
-      await Geolocation.clearWatch({ id });
-    }
+    await this.geofenceService.stopWatching();
   }
 }

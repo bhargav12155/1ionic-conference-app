@@ -36,6 +36,7 @@
     "@capacitor/device": "^6.0.0",
     "@capacitor/geolocation": "^6.1.0",
     "@capacitor/ios": "^6.1.2",
+    "@capacitor/network": "^7.0.2",
     "@googlemaps/js-api-loader": "^1.16.6",
     "@ionic/angular": "^8.0.0",
     "@ionic/cordova-builders": "^11.0.0",

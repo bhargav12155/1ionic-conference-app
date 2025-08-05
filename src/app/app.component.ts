@@ -20,25 +20,15 @@ export class AppComponent implements OnInit {
     {
       title: "Users",
       url: "/app/tabs/schedule",
-      icon: "calendar",
+      icon: "people",
     },
-    // {
-    //   title: "Speakers",
-    //   url: "/app/tabs/speakers",
-    //   icon: "people",
-    // },
     {
-      title: "Map",
-      url: "/app/tabs/map",
-      icon: "map",
+      title: "Activity Log",
+      url: "/app/tabs/activity",
+      icon: "time",
     },
-    // {
-    //   title: "About",
-    //   url: "/app/tabs/about",
-    //   icon: "information-circle",
-    // },
   ];
-  loggedIn = false;
+  loggedIn = false; // No authentication system
   dark = false;
   position: any;
   wait: Promise<string>;
@@ -63,21 +53,13 @@ export class AppComponent implements OnInit {
     if (this.platform.is("hybrid")) {
       // Hybrid-specific logic here
     }
-    // const toast = await this.toastCtrl.create({
-    //   message: `started`,
-    // });
-    // await toast.present();
 
     await this.storage.create();
-    this.checkLoginStatus();
-    this.listenForLoginEvents();
     this.subscribeToUpdates();
   }
 
   async ngOnInit() {
     await this.storage.create();
-    this.checkLoginStatus();
-    this.listenForLoginEvents();
     this.deviceInfo = this.deviceService.getDeviceInfo();
 
     this.swUpdate.versionUpdates.subscribe(async (res) => {
@@ -103,9 +85,6 @@ export class AppComponent implements OnInit {
         }
       });
     });
-
-    // this.getCurrentLocation();
-    // this.watchPosition();
   }
 
   watchPosition() {
@@ -117,16 +96,54 @@ export class AppComponent implements OnInit {
 
       this.ngZone.run(async () => {
         const { latitude: lat, longitude: lng } = position.coords;
-        // console.log("watch position lat long:", lat, lng);
-
-        try {
-          const address = await this.getAddressFromCoordinates(lat, lng);
-          // console.log(`Address: ${address}`);
-        } catch (error) {
-          console.error("Error:", error);
+        // Example geofence: Trinidad (10.6918, -61.2225), radius 1km
+        const geofenceLat = 10.6918;
+        const geofenceLng = -61.2225;
+        const radiusMeters = 1000;
+        const dist = this.getDistanceFromLatLonInMeters(
+          lat,
+          lng,
+          geofenceLat,
+          geofenceLng
+        );
+        if (dist <= radiusMeters) {
+          this.onGeofenceEnter();
         }
       });
     });
+  }
+
+  // Haversine formula for distance in meters
+  getDistanceFromLatLonInMeters(
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number
+  ): number {
+    const R = 6371000; // Radius of the earth in m
+    const dLat = this.deg2rad(lat2 - lat1);
+    const dLon = this.deg2rad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(this.deg2rad(lat1)) *
+        Math.cos(this.deg2rad(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const d = R * c; // Distance in m
+    return d;
+  }
+
+  deg2rad(deg: number): number {
+    return deg * (Math.PI / 180);
+  }
+
+  // Called when user enters geofence
+  onGeofenceEnter() {
+    console.log("Someone is in the area. Do something..");
+    // Log device details
+    console.log("Device details of entrant:", this.deviceInfo);
+    // You can add more actions here (e.g., show toast, trigger notification, etc.)
   }
 
   async getAddressFromCoordinates(lat: number, lng: number): Promise<string> {
@@ -235,37 +252,6 @@ export class AppComponent implements OnInit {
         .onDidDismiss()
         .then(() => this.swUpdate.activateUpdate())
         .then(() => window.location.reload());
-    });
-  }
-  checkLoginStatus() {
-    return this.userData.isLoggedIn().then((loggedIn) => {
-      return this.updateLoggedInStatus(loggedIn);
-    });
-  }
-
-  updateLoggedInStatus(loggedIn: boolean) {
-    setTimeout(() => {
-      this.loggedIn = loggedIn;
-    }, 300);
-  }
-
-  listenForLoginEvents() {
-    window.addEventListener("user:login", () => {
-      this.updateLoggedInStatus(true);
-    });
-
-    window.addEventListener("user:signup", () => {
-      this.updateLoggedInStatus(true);
-    });
-
-    window.addEventListener("user:logout", () => {
-      this.updateLoggedInStatus(false);
-    });
-  }
-
-  logout() {
-    this.userData.logout().then(() => {
-      return this.router.navigateByUrl("/app/tabs/schedule");
     });
   }
 

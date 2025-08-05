@@ -27,6 +27,7 @@ import { Geolocation } from "@capacitor/geolocation";
 import { ScheduleFilterPage } from "../schedule-filter/schedule-filter";
 import { ConferenceData } from "../../providers/conference-data";
 import { UserData } from "../../providers/user-data";
+import { GeofenceService } from "../../providers/geofence.service";
 import { DOCUMENT } from "@angular/common";
 import { DeviceDetectorService } from "ngx-device-detector";
 import { HttpClient } from "@angular/common/http";
@@ -77,7 +78,8 @@ export class SchedulePage implements OnInit, AfterViewInit {
     public ngZone: NgZone,
     private deviceService: DeviceDetectorService,
     private http: HttpClient,
-    private platform: Platform
+    private platform: Platform,
+    private geofenceService: GeofenceService
   ) {
     this.wasInPolygon = false; // Initialize audio objects with correct path
     this.enterSound = new Audio("/assets/sounds/chime.mp3");
@@ -294,13 +296,25 @@ export class SchedulePage implements OnInit, AfterViewInit {
 
   async getAddressFromCoordinates(lat: number, lng: number): Promise<string> {
     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${this.apiKey}`;
-
-    const response = await fetch(url);
-    const data = await response.json();
-    if (data.results.length > 0) {
-      return data.results[0].formatted_address;
-    } else {
-      throw new Error("No results found");
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Network response was not ok: ${response.status}`);
+      }
+      const data = await response.json();
+      if (data.results && data.results.length > 0) {
+        return data.results[0].formatted_address;
+      } else {
+        throw new Error("No results found");
+      }
+    } catch (error) {
+      if (
+        error instanceof TypeError &&
+        error.message.includes("Failed to fetch")
+      ) {
+        return "No internet connection";
+      }
+      return `Error: ${error.message || error}`;
     }
   }
 
@@ -628,6 +642,11 @@ export class SchedulePage implements OnInit, AfterViewInit {
 
     if (isInPolygon) {
       console.log("someone is in the area, Do something");
+
+      // Record the geofence entry event
+      this.geofenceService.addMockEvent("enter");
+      console.log("Recorded ENTER event in GeofenceService");
+
       this.enterSound
         .play()
         .catch((error) => console.error("Error playing enter sound:", error));
@@ -652,6 +671,10 @@ export class SchedulePage implements OnInit, AfterViewInit {
     } else {
       if (this.wasInPolygon) {
         console.log("someone left your area");
+
+        // Record the geofence exit event
+        this.geofenceService.addMockEvent("exit");
+        console.log("Recorded EXIT event in GeofenceService");
 
         // Create a toast for being outside the polygon
         this.currentToast = await this.toastCtrl.create({
