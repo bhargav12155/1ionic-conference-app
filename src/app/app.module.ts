@@ -11,7 +11,6 @@ import { ServiceWorkerModule } from "@angular/service-worker";
 import { environment } from "../environments/environment";
 import { FormsModule } from "@angular/forms";
 import { DeviceDetectorService } from "ngx-device-detector";
-import { Geofence } from "@ionic-native/geofence/ngx";
 
 @NgModule({
   imports: [
@@ -26,7 +25,7 @@ import { Geofence } from "@ionic-native/geofence/ngx";
     }),
   ],
   declarations: [AppComponent],
-  providers: [InAppBrowser, DeviceDetectorService, Geofence],
+  providers: [InAppBrowser, DeviceDetectorService],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

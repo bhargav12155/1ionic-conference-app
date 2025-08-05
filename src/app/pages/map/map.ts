@@ -32,7 +32,7 @@ export class MapPage implements AfterViewInit {
     if (appEl.classList.contains("ion-palette-dark")) {
       style = darkStyle;
     }
-    let apiKey = "AIzaSyCLRpRQ2_5XKdtVEmakB2ewtDcuP55ZeQA";
+    let apiKey = "AIzaSyABw7DX0sg8fmhPt9H6JdlIGO-GikNgWhI";
 
     const googleMaps = await getGoogleMaps(apiKey);
 

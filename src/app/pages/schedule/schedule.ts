@@ -290,7 +290,7 @@ export class SchedulePage implements OnInit, AfterViewInit {
     );
   }
 
-  apiKey = "AIzaSyCLRpRQ2_5XKdtVEmakB2ewtDcuP55ZeQA";
+  apiKey = "AIzaSyABw7DX0sg8fmhPt9H6JdlIGO-GikNgWhI";
 
   async getAddressFromCoordinates(lat: number, lng: number): Promise<string> {
     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${this.apiKey}`;

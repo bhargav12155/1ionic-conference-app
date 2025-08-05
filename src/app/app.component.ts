@@ -130,7 +130,7 @@ export class AppComponent implements OnInit {
   }
 
   async getAddressFromCoordinates(lat: number, lng: number): Promise<string> {
-    const apiKey = "AIzaSyCLRpRQ2_5XKdtVEmakB2ewtDcuP55ZeQA";
+    const apiKey = "AIzaSyABw7DX0sg8fmhPt9H6JdlIGO-GikNgWhI";
     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`;
 
     const response = await fetch(url);
@@ -175,7 +175,7 @@ export class AppComponent implements OnInit {
       // console.log(
       //   `Latitude: ${position.coords.latitude}, Longitude: ${position.coords.longitude}`
       // );
-      const apiKey = "AIzaSyCLRpRQ2_5XKdtVEmakB2ewtDcuP55ZeQA";
+      const apiKey = "AIzaSyABw7DX0sg8fmhPt9H6JdlIGO-GikNgWhI";
       const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${apiKey}`;
 
       try {

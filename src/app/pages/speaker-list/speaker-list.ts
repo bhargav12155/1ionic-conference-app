@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnInit, ViewChild } from "@angular/core";
 import { ConferenceData } from "../../providers/conference-data";
-import { Geofence } from "@ionic-native/geofence/ngx";
+import { Geolocation } from "@capacitor/geolocation";
 
 @Component({
   selector: "page-speaker-list",
@@ -13,28 +13,24 @@ export class SpeakerListPage implements OnInit {
   map: any;
   lat: any;
   lng: any;
+  watchId: Promise<string> | undefined;
 
   @ViewChild("map", { static: false }) mapElement: ElementRef;
 
-  constructor(
-    public confData: ConferenceData,
-    private geolocation: Geolocation
-  ) {}
+  constructor(public confData: ConferenceData) {}
 
-  ngOnInit(): void {
-    // this.loadMap();
-    // this.watchPosition();
-    console.log("&&&&&");
-    console.log("&&&&&");
-    console.log("&&&&&");
-    console.log("&&&&&");
-
-    if (navigator.geolocation) {
-      alert("navigator . geo location exosts");
-      console.log("navigator . geo location exosts");
-    } else {
-      alert("location doesnt exist");
-      console.log("navigator . geo location exosts not");
+  async ngOnInit() {
+    this.confData.getSpeakers().subscribe((speakers: any[]) => {
+      this.speakers = speakers;
+    });
+    try {
+      const permissionStatus = await Geolocation.checkPermissions();
+      if (permissionStatus.location === "denied") {
+        await Geolocation.requestPermissions();
+      }
+      this.watchPosition();
+    } catch (e) {
+      console.error(e);
     }
   }
 
@@ -44,75 +40,27 @@ export class SpeakerListPage implements OnInit {
     });
   }
 
-  watchPosition() {
-    // Watch position changes
-    let watch = this.geolocation.watchPosition(
-      (position) => {
-        // data is output only when position changes
-        this.lat = position.coords.latitude;
-        this.lng = position.coords.longitude;
-        console.log(this.lat, this.lng);
-      },
-      (err) => {
-        console.log(err);
-      }
-    );
+  async watchPosition() {
+    try {
+      this.watchId = Geolocation.watchPosition({}, (position, err) => {
+        if (position) {
+          this.lat = position.coords.latitude;
+          this.lng = position.coords.longitude;
+          console.log("Current position:", this.lat, this.lng);
+        }
+        if (err) {
+          console.error("Error watching position:", err);
+        }
+      });
+    } catch (e) {
+      console.error(e);
+    }
   }
 
-  // getPlaces() {
-  //   let mapCenter = { lat: -6.854359, lng: 107.598455 };
-  //   this.map = new google.maps.Map(this.mapElement.nativeElement, {
-  //     center: mapCenter,
-  //     zoom: 17,
-  //   });
-
-  //   let service = new google.maps.places.PlacesService(this.map);
-  //   service.nearbySearch(
-  //     {
-  //       location: mapCenter,
-  //       radius: 500,
-  //       type: ["restaurant"],
-  //     },
-  //     (results, status) => {
-  //       if (status === google.maps.places.PlacesServiceStatus.OK) {
-  //         for (let i = 0; i < results.length; i++) {
-  //           console.log(results[i].name);
-  //           this.addGeofence(
-  //             results[i].id,
-  //             i + 1,
-  //             results[i].geometry.location.lat(),
-  //             results[i].geometry.location.lng(),
-  //             results[i].name,
-  //             results[i].vicinity
-  //           );
-  //         }
-  //       }
-  //     }
-  //   );
-  // }
-
-  private addGeofence(id, idx, lat, lng, place, desc) {
-    let fence = {
-      id: id,
-      latitude: lat,
-      longitude: lng,
-      radius: 50,
-      transitionType: 3,
-      notification: {
-        id: idx,
-        title: "You crossed " + place,
-        text: desc,
-        openAppOnClick: true,
-      },
-    };
-
-    // this.geofence.addOrUpdate(fence).then(
-    //   () => console.log("Geofence added"),
-    //   (err) => console.log("Geofence failed to add")
-    // );
-  }
-
-  private removeAllGeofence() {
-    // this.geofence.removeAll();
+  async ionViewWillLeave() {
+    if (this.watchId) {
+      const id = await this.watchId;
+      await Geolocation.clearWatch({ id });
+    }
   }
 }
