@@ -214,7 +214,7 @@ export class MapPage implements OnInit, AfterViewInit {
     });
   }
 
-  finishDrawing() {
+  async finishDrawing() {
     if (!this.isDrawing || this.currentPolygonPoints.length < 3) {
       return;
     }
@@ -258,8 +258,11 @@ export class MapPage implements OnInit, AfterViewInit {
     this.allPolygonsData.push(polygonData);
     this.polygonCount++;
 
+    // Send the new geofence to backend API
+    await this.sendGeofenceToBackend(polygonData, this.polygonCount);
+
     this.ngZone.run(() => {
-      this.statusText = `Polygon ${this.polygonCount} created! Total polygons: ${this.polygons.length}. Drag marker to test geofences.`;
+      this.statusText = `Polygon ${this.polygonCount} created and sent to backend! Total polygons: ${this.polygons.length}. Drag marker to test geofences.`;
     });
 
     this.checkPolygonStatus();
@@ -529,5 +532,172 @@ export class MapPage implements OnInit, AfterViewInit {
       position: "top",
     });
     await toast.present();
+  }
+
+  async fetchExternalEvents(): Promise<any[]> {
+    try {
+      const response = await fetch("https://loc-end.onrender.com/api/location");
+      if (!response.ok) throw new Error("API request failed");
+      const data = await response.json();
+      // Sanitize and adapt API response to geofence event objects
+      if (!Array.isArray(data)) return [];
+      return data.map((event: any) => {
+        // Always return location as an object
+        let location = { latitude: null, longitude: null };
+        if (event.lat !== undefined && event.lng !== undefined) {
+          location = { latitude: event.lat, longitude: event.lng };
+        }
+        // Extract ip address and device platform from nested arrays
+        let ipAddress = "_";
+        let deviceType = "_";
+        if (
+          Array.isArray(event.network) &&
+          event.network[0] &&
+          event.network[0].ip
+        ) {
+          ipAddress = event.network[0].ip;
+        }
+        if (
+          Array.isArray(event.device) &&
+          event.device[0] &&
+          event.device[0].platform
+        ) {
+          deviceType = event.device[0].platform;
+        }
+        return {
+          timestamp:
+            event.timestamp ??
+            event.entryTimestamp ??
+            event.exitTimestamp ??
+            null,
+          locationName:
+            event.locationName ?? event.location ?? event.name ?? "_",
+          // userId removed
+          phoneNumber: event.phoneNumber ?? event.phone ?? "_",
+          email: event.email ?? "_",
+          ipAddress,
+          deviceType,
+          type:
+            event.type ??
+            (event.entryTimestamp
+              ? "enter"
+              : event.exitTimestamp
+              ? "exit"
+              : "_"),
+          entryTimestamp: event.entryTimestamp ?? null,
+          exitTimestamp: event.exitTimestamp ?? null,
+          userDeviceInfo: event.userDeviceInfo ?? "_",
+          location,
+        };
+      });
+    } catch (error) {
+      console.error("Error fetching external events:", error);
+      return [];
+    }
+  }
+
+  // Send geofence to backend API
+  async sendGeofenceToBackend(polygonPoints: any[], polygonNumber: number) {
+    try {
+      // Calculate centroid of the polygon
+      const centroid = this.calculatePolygonCentroid(polygonPoints);
+
+      // Calculate approximate radius (distance from centroid to farthest point)
+      const radius = this.calculatePolygonRadius(polygonPoints, centroid);
+
+      // Create geofence data
+      const geofenceData = {
+        name: `Geofence ${polygonNumber}`,
+        lat: centroid.lat,
+        lng: centroid.lng,
+        radius: Math.round(radius), // Round to nearest meter
+        activeFrom: new Date().toISOString(),
+        activeTo: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Active for 24 hours
+      };
+
+      // Send to backend using the geofence service
+      const result = await this.geofenceService.sendPolygonsToBackend([
+        geofenceData,
+      ]);
+
+      console.log("Geofence sent to backend:", result[0]);
+
+      // Show success toast
+      const toast = await this.toastCtrl.create({
+        message: `Geofence "${geofenceData.name}" sent to backend successfully!`,
+        duration: 3000,
+        color: "success",
+        position: "top",
+      });
+      await toast.present();
+    } catch (error) {
+      console.error("Error sending geofence to backend:", error);
+
+      // Show error toast
+      const toast = await this.toastCtrl.create({
+        message: "Failed to send geofence to backend",
+        duration: 3000,
+        color: "danger",
+        position: "top",
+      });
+      await toast.present();
+    }
+  }
+
+  // Calculate centroid (center point) of a polygon
+  calculatePolygonCentroid(points: any[]): { lat: number; lng: number } {
+    let centroidLat = 0;
+    let centroidLng = 0;
+
+    for (const point of points) {
+      centroidLat += point.lat;
+      centroidLng += point.lng;
+    }
+
+    return {
+      lat: centroidLat / points.length,
+      lng: centroidLng / points.length,
+    };
+  }
+
+  // Calculate approximate radius of polygon (distance from centroid to farthest point)
+  calculatePolygonRadius(
+    points: any[],
+    centroid: { lat: number; lng: number }
+  ): number {
+    let maxDistance = 0;
+
+    for (const point of points) {
+      const distance = this.calculateDistance(
+        centroid.lat,
+        centroid.lng,
+        point.lat,
+        point.lng
+      );
+      maxDistance = Math.max(maxDistance, distance);
+    }
+
+    return maxDistance;
+  }
+
+  // Calculate distance between two points in meters
+  calculateDistance(
+    lat1: number,
+    lng1: number,
+    lat2: number,
+    lng2: number
+  ): number {
+    const R = 6371e3; // Earth radius in meters
+    const φ1 = (lat1 * Math.PI) / 180;
+    const φ2 = (lat2 * Math.PI) / 180;
+    const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+    const Δλ = ((lng2 - lng1) * Math.PI) / 180;
+
+    const a =
+      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c;
   }
 }

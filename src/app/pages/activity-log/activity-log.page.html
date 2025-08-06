@@ -10,93 +10,201 @@
 <ion-content>
     <ion-card>
         <ion-card-header>
-            <ion-card-title>Geofence Entry/Exit History</ion-card-title>
-            <ion-card-subtitle>Recent activity in Trinidad area</ion-card-subtitle>
+            <ion-card-title>Activity Log</ion-card-title>
+            <ion-card-subtitle>
+                Showing {{ paginatedEvents.length }} of {{ filteredEvents.length }} events
+                ({{ geofenceEvents.length }} total)
+            </ion-card-subtitle>
         </ion-card-header>
+
         <ion-card-content>
-            <div class="ion-padding">
-                <div class="table-container" *ngIf="geofenceEvents.length > 0; else noEvents">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Type</th>
-                                <th>Timestamp</th>
-                                <th>Location</th>
-                                <th>User ID</th>
-                                <th>Device</th>
-                                <th>Duration</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr *ngFor="let event of geofenceEvents">
-                                <td data-label="Type">
-                                    <ion-chip [color]="getEventColor(event.type)">
-                                        <ion-icon [name]="getEventIcon(event.type)"></ion-icon>
-                                        <ion-label>{{ event.type.toUpperCase() }}</ion-label>
-                                    </ion-chip>
-                                </td>
-                                <td data-label="Timestamp">{{ formatTimestamp(event.timestamp) }}</td>
-                                <td data-label="Location">{{ event.location.latitude.toFixed(4) }}, {{
-                                    event.location.longitude.toFixed(4) }}
-                                </td>
-                                <td data-label="User ID">
-                                    <code>{{ event.userId }}</code>
-                                </td>
-                                <td data-label="Device">
-                                    <span *ngIf="event.userDeviceInfo">{{ event.userDeviceInfo.model ||
-                                        event.userDeviceInfo.platform || 'Unknown' }}</span>
-                                </td>
-                                <td data-label="Duration">
-                                    <span *ngIf="event.duration && event.type === 'exit'">{{
-                                        formatDuration(event.duration) }}</span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <!-- Controls Section -->
+            <div class="controls-section">
+                <div class="search-filter-row">
+                    <!-- Search Box -->
+                    <ion-searchbar [(ngModel)]="searchQuery" (ionInput)="onSearchChange($event)"
+                        placeholder="Search by User ID, IP, Device, Type..." debounce="300">
+                    </ion-searchbar>
+
+                    <!-- Filter Dropdown -->
+                    <ion-select [(ngModel)]="filterType" (ionChange)="onFilterChange($event)"
+                        placeholder="Filter by Type" interface="popover">
+                        <ion-select-option value="all">All Types</ion-select-option>
+                        <ion-select-option value="enter">Enter</ion-select-option>
+                        <ion-select-option value="exit">Exit</ion-select-option>
+                    </ion-select>
+
+                    <!-- Refresh Button -->
+                    <ion-button (click)="refreshEvents()" fill="outline" color="primary">
+                        <ion-icon name="refresh" slot="start"></ion-icon>
+                        Refresh
+                    </ion-button>
+                </div>
+
+                <!-- Page Size Selector -->
+                <div class="page-size-row">
+                    <ion-label>Items per page:</ion-label>
+                    <ion-select [(ngModel)]="pageSize" (ionChange)="currentPage = 1" interface="popover">
+                        <ion-select-option value="5">5</ion-select-option>
+                        <ion-select-option value="10">10</ion-select-option>
+                        <ion-select-option value="25">25</ion-select-option>
+                        <ion-select-option value="50">50</ion-select-option>
+                    </ion-select>
                 </div>
             </div>
 
+            <!-- Table Section -->
+            <div class="table-container" *ngIf="filteredEvents.length > 0; else noEvents">
+                <table class="activity-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th (click)="setSort('type')" class="sortable">
+                                Type
+                                <ion-icon *ngIf="sortColumn === 'type'"
+                                    [name]="sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'">
+                                </ion-icon>
+                            </th>
+                            <th (click)="setSort('timestamp')" class="sortable">
+                                Timestamp
+                                <ion-icon *ngIf="sortColumn === 'timestamp'"
+                                    [name]="sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'">
+                                </ion-icon>
+                            </th>
+                            <th (click)="setSort('location')" class="sortable">
+                                Location
+                                <ion-icon *ngIf="sortColumn === 'location'"
+                                    [name]="sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'">
+                                </ion-icon>
+                            </th>
+                            <th (click)="setSort('userId')" class="sortable">
+                                User ID/Name
+                                <ion-icon *ngIf="sortColumn === 'userId'"
+                                    [name]="sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'">
+                                </ion-icon>
+                            </th>
+                            <th (click)="setSort('device')" class="sortable">
+                                Device
+                                <ion-icon *ngIf="sortColumn === 'device'"
+                                    [name]="sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'">
+                                </ion-icon>
+                            </th>
+                            <th (click)="setSort('ipAddress')" class="sortable">
+                                IP Address
+                                <ion-icon *ngIf="sortColumn === 'ipAddress'"
+                                    [name]="sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'">
+                                </ion-icon>
+                            </th>
+                            <th (click)="setSort('accuracy')" class="sortable">
+                                Accuracy
+                                <ion-icon *ngIf="sortColumn === 'accuracy'"
+                                    [name]="sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'">
+                                </ion-icon>
+                            </th>
+                            <th>Duration</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let event of paginatedEvents; let i = index" class="event-row">
+                            <td class="row-number">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                            <td>
+                                <ion-chip [color]="getEventColor(event.type)" class="type-chip">
+                                    <ion-icon [name]="getEventIcon(event.type)"></ion-icon>
+                                    <ion-label>{{ getDisplayField(event, 'type') | uppercase }}</ion-label>
+                                </ion-chip>
+                            </td>
+                            <td class="timestamp-cell">{{ getDisplayField(event, 'timestamp') }}</td>
+                            <td class="location-cell">
+                                <ng-container
+                                    *ngIf="event.location && event.location.latitude !== null && event.location.longitude !== null; else locationFallback">
+                                    <code>{{ getNumberField(event.location, 'latitude', 4) }}, {{ getNumberField(event.location, 'longitude', 4) }}</code>
+                                </ng-container>
+                                <ng-template #locationFallback>
+                                    <span class="no-data">_</span>
+                                </ng-template>
+                            </td>
+                            <td><code class="user-id">{{ getDisplayField(event, 'userId') }}</code></td>
+                            <td><span class="device-info">{{ getDisplayField(event, 'device') }}</span></td>
+                            <td><code class="ip-address">{{ getDisplayField(event, 'ipAddress') }}</code></td>
+                            <td><span class="accuracy">{{ getDisplayField(event, 'accuracy') }}</span></td>
+                            <td class="duration-cell">
+                                <span *ngIf="event.duration && event.type === 'exit'" class="duration">
+                                    {{ formatDuration(event.duration) }}
+                                </span>
+                                <span *ngIf="!event.duration || event.type !== 'exit'" class="no-data">_</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Enhanced Pagination Controls -->
+            <div class="pagination-section" *ngIf="totalPages > 1">
+                <div class="pagination-info">
+                    <span>
+                        Showing {{ (currentPage - 1) * pageSize + 1 }} -
+                        {{ Math.min(currentPage * pageSize, filteredEvents.length) }} of
+                        {{ filteredEvents.length }} entries
+                    </span>
+                </div>
+
+                <div class="pagination-controls">
+                    <!-- First Page -->
+                    <ion-button (click)="jumpToPage(1)" [disabled]="currentPage === 1" fill="outline" size="small">
+                        <ion-icon name="chevron-back-outline" slot="start"></ion-icon>
+                        First
+                    </ion-button>
+
+                    <!-- Previous Page -->
+                    <ion-button (click)="prevPage()" [disabled]="currentPage === 1" fill="outline" size="small">
+                        <ion-icon name="chevron-back" slot="icon-only"></ion-icon>
+                    </ion-button>
+
+                    <!-- Page Numbers -->
+                    <div class="page-numbers">
+                        <ion-button *ngFor="let page of pageNumbers" (click)="jumpToPage(page)"
+                            [fill]="currentPage === page ? 'solid' : 'outline'"
+                            [color]="currentPage === page ? 'primary' : 'medium'" size="small" class="page-number">
+                            {{ page }}
+                        </ion-button>
+                    </div>
+
+                    <!-- Next Page -->
+                    <ion-button (click)="nextPage()" [disabled]="currentPage === totalPages" fill="outline"
+                        size="small">
+                        <ion-icon name="chevron-forward" slot="icon-only"></ion-icon>
+                    </ion-button>
+
+                    <!-- Last Page -->
+                    <ion-button (click)="jumpToPage(totalPages)" [disabled]="currentPage === totalPages" fill="outline"
+                        size="small">
+                        Last
+                        <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+                    </ion-button>
+                </div>
+
+                <!-- Jump to Page -->
+                <div class="jump-to-page">
+                    <ion-label>Go to page:</ion-label>
+                    <ion-input type="number" [value]="currentPage" (ionInput)="onPageInputChange($event)" min="1"
+                        [max]="totalPages" placeholder="Page" class="page-input">
+                    </ion-input>
+                    <span class="total-pages">of {{ totalPages }}</span>
+                </div>
+            </div>
+
+            <!-- No Events Template -->
             <ng-template #noEvents>
-                <ion-item>
-                    <ion-icon name="time" slot="start"></ion-icon>
-                    <ion-label>
-                        <h3>No activity recorded yet</h3>
-                        <p>Enter and exit the Trinidad geofence area to see activity logs</p>
-                    </ion-label>
-                </ion-item>
+                <div class="no-events">
+                    <ion-icon name="location-outline" class="no-events-icon"></ion-icon>
+                    <h3>No Events Found</h3>
+                    <p>No geofence events match your current filters.</p>
+                    <ion-button (click)="refreshEvents()" fill="outline" color="primary">
+                        <ion-icon name="refresh" slot="start"></ion-icon>
+                        Refresh Data
+                    </ion-button>
+                </div>
             </ng-template>
         </ion-card-content>
     </ion-card>
-
-    <!-- Statistics Card -->
-    <ion-card *ngIf="geofenceEvents.length > 0">
-        <ion-card-header>
-            <ion-card-title>Statistics</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-            <ion-grid>
-                <ion-row>
-                    <ion-col size="6">
-                        <ion-item lines="none">
-                            <ion-icon name="enter" color="success" slot="start"></ion-icon>
-                            <ion-label>
-                                <h3>{{ getEntriesCount() }}</h3>
-                                <p>Entries</p>
-                            </ion-label>
-                        </ion-item>
-                    </ion-col>
-                    <ion-col size="6">
-                        <ion-item lines="none">
-                            <ion-icon name="exit" color="warning" slot="start"></ion-icon>
-                            <ion-label>
-                                <h3>{{ getExitsCount() }}</h3>
-                                <p>Exits</p>
-                            </ion-label>
-                        </ion-item>
-                    </ion-col>
-                </ion-row>
-            </ion-grid>
-        </ion-card-content>
-    </ion-card>
-
 </ion-content>

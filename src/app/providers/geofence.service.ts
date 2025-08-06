@@ -33,6 +33,55 @@ export interface GeofenceEvent {
   providedIn: "root",
 })
 export class GeofenceService {
+  // Send all polygons to backend API
+  async sendPolygonsToBackend(
+    polygons: Array<{
+      name: string;
+      lat: number;
+      lng: number;
+      radius: number;
+      activeFrom: string;
+      activeTo: string;
+    }>
+  ): Promise<any[]> {
+    // Determine API base URL based on environment
+    const isLocal =
+      window.location.protocol === "file:" ||
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1";
+    const API_BASE = isLocal
+      ? "http://localhost:3000"
+      : "https://loc-end.onrender.com";
+
+    const results = [];
+    for (const geofenceData of polygons) {
+      try {
+        console.log("Sending geofence to:", `${API_BASE}/api/geofence`);
+        console.log("Geofence data:", geofenceData);
+
+        const response = await fetch(`${API_BASE}/api/geofence`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(geofenceData),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log("Backend response:", result);
+        results.push(result);
+      } catch (error) {
+        console.error("Error sending polygon to backend:", error);
+        results.push({ error: error.message });
+      }
+    }
+    return results;
+  }
   private geofenceCenter = { lat: 10.6918, lng: -61.2225 }; // Trinidad coordinates
   private geofenceRadius = 1000; // 1km radius
   private users: UserInfo[] = [];
