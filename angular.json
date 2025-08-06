@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "www",
+            "outputPath": "dist/ionic-conference-app",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -47,9 +47,7 @@
             "sourceMap": true,
             "optimization": false,
             "namedChunks": true,
-            "allowedCommonJsDependencies": [
-              "localforage"
-            ]
+            "allowedCommonJsDependencies": ["localforage"]
           },
           "configurations": {
             "production": {
@@ -168,10 +166,7 @@
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": [
-              "src/**/*.ts",
-              "src/**/*.html"
-            ]
+            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
           }
         },
         "cypress-run": {
