@@ -19,13 +19,13 @@ export class AppComponent implements OnInit {
   appPages = [
     {
       title: "Users",
-      url: "/app/tabs/schedule",
+      url: "/app/tabs/users",
       icon: "people",
     },
     {
       title: "Activity Log",
-      url: "/app/tabs/activity",
-      icon: "time",
+      url: "/app/tabs/activity-log",
+      icon: "list",
     },
   ];
   loggedIn = false; // No authentication system

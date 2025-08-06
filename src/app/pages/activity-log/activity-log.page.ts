@@ -1,3 +1,4 @@
+// ...existing code...
 import { Component, OnInit } from "@angular/core";
 import {
   GeofenceService,
@@ -10,6 +11,12 @@ import {
   styleUrls: ["./activity-log.page.scss"],
 })
 export class ActivityLogPage implements OnInit {
+  isMobile(): boolean {
+    // Basic check for mobile devices
+    return /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
+  }
   geofenceEvents: GeofenceEvent[] = [];
 
   constructor(private geofenceService: GeofenceService) {}

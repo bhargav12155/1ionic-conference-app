@@ -1,0 +1,81 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-menu-button></ion-menu-button>
+        </ion-buttons>
+        <ion-title>Interactive Map</ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <div #mapPlotting id="mapPlotting" style="height: 70vh; width: 100%;"></div>
+
+    <ion-card>
+        <ion-card-header>
+            <ion-card-title>Drawing Tools</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+            <ion-row>
+                <ion-col size="6">
+                    <ion-button expand="block" fill="solid" color="primary" (click)="startDrawing()"
+                        [disabled]="isDrawing">
+                        <ion-icon name="create" slot="start"></ion-icon>
+                        {{ isDrawing ? 'Drawing...' : 'Draw Polygon' }}
+                    </ion-button>
+                </ion-col>
+                <ion-col size="6">
+                    <ion-button expand="block" fill="outline" color="secondary" (click)="finishDrawing()"
+                        [disabled]="!isDrawing || currentPolygonPoints.length < 3">
+                        <ion-icon name="checkmark" slot="start"></ion-icon>
+                        Finish
+                    </ion-button>
+                </ion-col>
+            </ion-row>
+            <ion-row>
+                <ion-col size="6">
+                    <ion-button expand="block" fill="outline" color="warning" (click)="clearPolygon()"
+                        [disabled]="polygons.length === 0">
+                        <ion-icon name="trash" slot="start"></ion-icon>
+                        Clear Last
+                    </ion-button>
+                </ion-col>
+                <ion-col size="6">
+                    <ion-button expand="block" fill="outline" color="danger" (click)="clearAllPolygons()"
+                        [disabled]="polygons.length === 0">
+                        <ion-icon name="trash" slot="start"></ion-icon>
+                        Clear All
+                    </ion-button>
+                </ion-col>
+            </ion-row>
+            <ion-row>
+                <ion-col size="12">
+                    <ion-button expand="block" fill="outline" color="tertiary" (click)="enableDrawingManager()"
+                        [disabled]="drawingManagerEnabled">
+                        <ion-icon name="shapes" slot="start"></ion-icon>
+                        Google Drawing Tools
+                    </ion-button>
+                </ion-col>
+            </ion-row>
+            <ion-item>
+                <ion-label>
+                    <h3>Status:</h3>
+                    <p [ngClass]="{'inside-geofence': isInsidePolygon, 'outside-geofence': !isInsidePolygon}">
+                        {{ statusText }}
+                    </p>
+                </ion-label>
+            </ion-item>
+            <ion-item *ngIf="isDrawing && currentPolygonPoints.length > 0">
+                <ion-label>
+                    <h3>Points: {{ currentPolygonPoints.length }}</h3>
+                    <p>Click on map to add points, then click "Finish" when done</p>
+                </ion-label>
+            </ion-item>
+            <ion-item *ngIf="polygons.length > 0">
+                <ion-label>
+                    <h3>Total Polygons: {{ polygons.length }}</h3>
+                    <p>Multiple geofences created - different colors for each</p>
+                </ion-label>
+            </ion-item>
+        </ion-card-content>
+    </ion-card>
+</ion-content>

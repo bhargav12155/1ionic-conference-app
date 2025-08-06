@@ -1,0 +1,38 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-menu-button></ion-menu-button>
+        </ion-buttons>
+        <ion-title>Users</ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <ion-card>
+        <ion-card-header>
+            <ion-card-title>User List</ion-card-title>
+            <ion-card-subtitle>Users currently being tracked</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+            <ion-list *ngIf="users.length > 0; else noUsers">
+                <ion-item *ngFor="let user of users">
+                    <ion-avatar slot="start">
+                        <ion-icon name="person-circle" class="user-avatar"></ion-icon>
+                    </ion-avatar>
+                    <ion-label>
+                        <h2>{{ user.id }}</h2>
+                        <p>Status: <ion-badge [color]="getStatusColor(user.geofenceStatus)">{{ user.geofenceStatus
+                                }}</ion-badge></p>
+                        <p>Last Seen: {{ formatTimestamp(user.lastSeen) }}</p>
+                    </ion-label>
+                </ion-item>
+            </ion-list>
+            <ng-template #noUsers>
+                <ion-item>
+                    <ion-icon name="people-outline" slot="start"></ion-icon>
+                    <ion-label>No users to display.</ion-label>
+                </ion-item>
+            </ng-template>
+        </ion-card-content>
+    </ion-card>
+</ion-content>
