@@ -19,7 +19,7 @@ var _AppRoutingModule;
 
 const routes = [{
   path: "",
-  redirectTo: "/app/tabs/schedule",
+  redirectTo: "/app/tabs/map",
   pathMatch: "full"
 }, {
   path: "app",
@@ -119,12 +119,12 @@ class AppComponent {
     this.toastCtrl = toastCtrl;
     this.appPages = [{
       title: "Users",
-      url: "/app/tabs/schedule",
+      url: "/app/tabs/users",
       icon: "people"
     }, {
       title: "Activity Log",
-      url: "/app/tabs/activity",
-      icon: "time"
+      url: "/app/tabs/activity-log",
+      icon: "list"
     }];
     this.loggedIn = false; // No authentication system
     this.dark = false;
