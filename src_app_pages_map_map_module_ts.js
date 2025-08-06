@@ -309,47 +309,52 @@ class MapPage {
     });
   }
   finishDrawing() {
-    if (!this.isDrawing || this.currentPolygonPoints.length < 3) {
-      return;
-    }
-    this.ngZone.run(() => {
-      this.isDrawing = false;
-    });
-    google.maps.event.clearListeners(this.map, "click");
-    // Clear temporary markers
-    this.tempMarkers.forEach(marker => marker.setMap(null));
-    this.tempMarkers = [];
-    // Create the polygon with different colors for each polygon
-    const colors = ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF"];
-    const color = colors[this.polygonCount % colors.length];
-    const polygonData = [...this.currentPolygonPoints];
-    this.currentPolygon = new google.maps.Polygon({
-      paths: polygonData,
-      strokeColor: color,
-      strokeOpacity: 0.8,
-      strokeWeight: 2,
-      fillColor: color,
-      fillOpacity: 0.35,
-      editable: true
-    });
-    this.currentPolygon.setMap(this.map);
-    // Store the polygon and its data
-    this.polygons.push(this.currentPolygon);
-    this.allPolygonsData.push(polygonData);
-    this.polygonCount++;
-    this.ngZone.run(() => {
-      this.statusText = `Polygon ${this.polygonCount} created! Total polygons: ${this.polygons.length}. Drag marker to test geofences.`;
-    });
-    this.checkPolygonStatus();
-    // Add listener for polygon editing
-    this.currentPolygon.addListener("set_at", () => {
-      this.updatePolygonPoints();
-    });
-    this.currentPolygon.addListener("insert_at", () => {
-      this.updatePolygonPoints();
-    });
-    // Reset current polygon points
-    this.currentPolygonPoints = [];
+    var _this = this;
+    return (0,_Users_ananya_Documents_bhargav_1ionic_conference_app_node_modules_babel_runtime_helpers_esm_asyncToGenerator_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function* () {
+      if (!_this.isDrawing || _this.currentPolygonPoints.length < 3) {
+        return;
+      }
+      _this.ngZone.run(() => {
+        _this.isDrawing = false;
+      });
+      google.maps.event.clearListeners(_this.map, "click");
+      // Clear temporary markers
+      _this.tempMarkers.forEach(marker => marker.setMap(null));
+      _this.tempMarkers = [];
+      // Create the polygon with different colors for each polygon
+      const colors = ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF"];
+      const color = colors[_this.polygonCount % colors.length];
+      const polygonData = [..._this.currentPolygonPoints];
+      _this.currentPolygon = new google.maps.Polygon({
+        paths: polygonData,
+        strokeColor: color,
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        fillColor: color,
+        fillOpacity: 0.35,
+        editable: true
+      });
+      _this.currentPolygon.setMap(_this.map);
+      // Store the polygon and its data
+      _this.polygons.push(_this.currentPolygon);
+      _this.allPolygonsData.push(polygonData);
+      _this.polygonCount++;
+      // Send the new geofence to backend API
+      yield _this.sendGeofenceToBackend(polygonData, _this.polygonCount);
+      _this.ngZone.run(() => {
+        _this.statusText = `Polygon ${_this.polygonCount} created and sent to backend! Total polygons: ${_this.polygons.length}. Drag marker to test geofences.`;
+      });
+      _this.checkPolygonStatus();
+      // Add listener for polygon editing
+      _this.currentPolygon.addListener("set_at", () => {
+        _this.updatePolygonPoints();
+      });
+      _this.currentPolygon.addListener("insert_at", () => {
+        _this.updatePolygonPoints();
+      });
+      // Reset current polygon points
+      _this.currentPolygonPoints = [];
+    })();
   }
   updatePolygonPoints() {
     // Update polygon data when edited
@@ -513,16 +518,16 @@ class MapPage {
     }
   }
   handleGeofenceEntry(polygonIndex) {
-    var _this = this;
+    var _this2 = this;
     return (0,_Users_ananya_Documents_bhargav_1ionic_conference_app_node_modules_babel_runtime_helpers_esm_asyncToGenerator_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function* () {
       const polygonText = polygonIndex ? ` ${polygonIndex}` : "";
       console.log(`Entered geofence area${polygonText}`);
       // Play sound
-      _this.enterSound.play().catch(error => console.error("Error playing enter sound:", error));
+      _this2.enterSound.play().catch(error => console.error("Error playing enter sound:", error));
       // Record event in GeofenceService
-      _this.geofenceService.addMockEvent("enter");
+      _this2.geofenceService.addMockEvent("enter");
       // Show toast notification
-      const toast = yield _this.toastCtrl.create({
+      const toast = yield _this2.toastCtrl.create({
         header: "Geofence Entry",
         message: `You have entered geofence${polygonText}!`,
         duration: 3000,
@@ -533,15 +538,15 @@ class MapPage {
     })();
   }
   handleGeofenceExit() {
-    var _this2 = this;
+    var _this3 = this;
     return (0,_Users_ananya_Documents_bhargav_1ionic_conference_app_node_modules_babel_runtime_helpers_esm_asyncToGenerator_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function* () {
       console.log("Exited geofence area");
       // Play sound
-      _this2.exitSound.play().catch(error => console.error("Error playing exit sound:", error));
+      _this3.exitSound.play().catch(error => console.error("Error playing exit sound:", error));
       // Record event in GeofenceService
-      _this2.geofenceService.addMockEvent("exit");
+      _this3.geofenceService.addMockEvent("exit");
       // Show toast notification
-      const toast = yield _this2.toastCtrl.create({
+      const toast = yield _this3.toastCtrl.create({
         header: "Geofence Exit",
         message: "You have left the geofence area!",
         duration: 3000,
@@ -550,6 +555,133 @@ class MapPage {
       });
       yield toast.present();
     })();
+  }
+  fetchExternalEvents() {
+    return (0,_Users_ananya_Documents_bhargav_1ionic_conference_app_node_modules_babel_runtime_helpers_esm_asyncToGenerator_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function* () {
+      try {
+        const response = yield fetch("https://loc-end.onrender.com/api/location");
+        if (!response.ok) throw new Error("API request failed");
+        const data = yield response.json();
+        // Sanitize and adapt API response to geofence event objects
+        if (!Array.isArray(data)) return [];
+        return data.map(event => {
+          var _ref, _ref2, _event$timestamp, _ref3, _ref4, _event$locationName, _ref5, _event$phoneNumber, _event$email, _event$type, _event$entryTimestamp, _event$exitTimestamp, _event$userDeviceInfo;
+          // Always return location as an object
+          let location = {
+            latitude: null,
+            longitude: null
+          };
+          if (event.lat !== undefined && event.lng !== undefined) {
+            location = {
+              latitude: event.lat,
+              longitude: event.lng
+            };
+          }
+          // Extract ip address and device platform from nested arrays
+          let ipAddress = "_";
+          let deviceType = "_";
+          if (Array.isArray(event.network) && event.network[0] && event.network[0].ip) {
+            ipAddress = event.network[0].ip;
+          }
+          if (Array.isArray(event.device) && event.device[0] && event.device[0].platform) {
+            deviceType = event.device[0].platform;
+          }
+          return {
+            timestamp: (_ref = (_ref2 = (_event$timestamp = event.timestamp) !== null && _event$timestamp !== void 0 ? _event$timestamp : event.entryTimestamp) !== null && _ref2 !== void 0 ? _ref2 : event.exitTimestamp) !== null && _ref !== void 0 ? _ref : null,
+            locationName: (_ref3 = (_ref4 = (_event$locationName = event.locationName) !== null && _event$locationName !== void 0 ? _event$locationName : event.location) !== null && _ref4 !== void 0 ? _ref4 : event.name) !== null && _ref3 !== void 0 ? _ref3 : "_",
+            // userId removed
+            phoneNumber: (_ref5 = (_event$phoneNumber = event.phoneNumber) !== null && _event$phoneNumber !== void 0 ? _event$phoneNumber : event.phone) !== null && _ref5 !== void 0 ? _ref5 : "_",
+            email: (_event$email = event.email) !== null && _event$email !== void 0 ? _event$email : "_",
+            ipAddress,
+            deviceType,
+            type: (_event$type = event.type) !== null && _event$type !== void 0 ? _event$type : event.entryTimestamp ? "enter" : event.exitTimestamp ? "exit" : "_",
+            entryTimestamp: (_event$entryTimestamp = event.entryTimestamp) !== null && _event$entryTimestamp !== void 0 ? _event$entryTimestamp : null,
+            exitTimestamp: (_event$exitTimestamp = event.exitTimestamp) !== null && _event$exitTimestamp !== void 0 ? _event$exitTimestamp : null,
+            userDeviceInfo: (_event$userDeviceInfo = event.userDeviceInfo) !== null && _event$userDeviceInfo !== void 0 ? _event$userDeviceInfo : "_",
+            location
+          };
+        });
+      } catch (error) {
+        console.error("Error fetching external events:", error);
+        return [];
+      }
+    })();
+  }
+  // Send geofence to backend API
+  sendGeofenceToBackend(polygonPoints, polygonNumber) {
+    var _this4 = this;
+    return (0,_Users_ananya_Documents_bhargav_1ionic_conference_app_node_modules_babel_runtime_helpers_esm_asyncToGenerator_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function* () {
+      try {
+        // Calculate centroid of the polygon
+        const centroid = _this4.calculatePolygonCentroid(polygonPoints);
+        // Calculate approximate radius (distance from centroid to farthest point)
+        const radius = _this4.calculatePolygonRadius(polygonPoints, centroid);
+        // Create geofence data
+        const geofenceData = {
+          name: `Geofence ${polygonNumber}`,
+          lat: centroid.lat,
+          lng: centroid.lng,
+          radius: Math.round(radius),
+          // Round to nearest meter
+          activeFrom: new Date().toISOString(),
+          activeTo: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // Active for 24 hours
+        };
+        // Send to backend using the geofence service
+        const result = yield _this4.geofenceService.sendPolygonsToBackend([geofenceData]);
+        console.log("Geofence sent to backend:", result[0]);
+        // Show success toast
+        const toast = yield _this4.toastCtrl.create({
+          message: `Geofence "${geofenceData.name}" sent to backend successfully!`,
+          duration: 3000,
+          color: "success",
+          position: "top"
+        });
+        yield toast.present();
+      } catch (error) {
+        console.error("Error sending geofence to backend:", error);
+        // Show error toast
+        const toast = yield _this4.toastCtrl.create({
+          message: "Failed to send geofence to backend",
+          duration: 3000,
+          color: "danger",
+          position: "top"
+        });
+        yield toast.present();
+      }
+    })();
+  }
+  // Calculate centroid (center point) of a polygon
+  calculatePolygonCentroid(points) {
+    let centroidLat = 0;
+    let centroidLng = 0;
+    for (const point of points) {
+      centroidLat += point.lat;
+      centroidLng += point.lng;
+    }
+    return {
+      lat: centroidLat / points.length,
+      lng: centroidLng / points.length
+    };
+  }
+  // Calculate approximate radius of polygon (distance from centroid to farthest point)
+  calculatePolygonRadius(points, centroid) {
+    let maxDistance = 0;
+    for (const point of points) {
+      const distance = this.calculateDistance(centroid.lat, centroid.lng, point.lat, point.lng);
+      maxDistance = Math.max(maxDistance, distance);
+    }
+    return maxDistance;
+  }
+  // Calculate distance between two points in meters
+  calculateDistance(lat1, lng1, lat2, lng2) {
+    const R = 6371e3; // Earth radius in meters
+    const φ1 = lat1 * Math.PI / 180;
+    const φ2 = lat2 * Math.PI / 180;
+    const Δφ = (lat2 - lat1) * Math.PI / 180;
+    const Δλ = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
   }
 }
 _MapPage = MapPage;
