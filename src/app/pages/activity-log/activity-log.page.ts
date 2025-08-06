@@ -376,4 +376,30 @@ export class ActivityLogPage implements OnInit {
       this.jumpToPage(page);
     }
   }
+
+  // Helper method for template to access Math.min
+  getMin(a: number, b: number): number {
+    return Math.min(a, b);
+  }
+
+  setSort(column: string) {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === "asc" ? "desc" : "asc";
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = "asc";
+    }
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+    }
+  }
+
+  prevPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+    }
+  }
 }

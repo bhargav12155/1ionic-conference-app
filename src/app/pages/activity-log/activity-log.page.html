@@ -143,7 +143,7 @@
                 <div class="pagination-info">
                     <span>
                         Showing {{ (currentPage - 1) * pageSize + 1 }} -
-                        {{ Math.min(currentPage * pageSize, filteredEvents.length) }} of
+                        {{ getMin(currentPage * pageSize, filteredEvents.length) }} of
                         {{ filteredEvents.length }} entries
                     </span>
                 </div>
