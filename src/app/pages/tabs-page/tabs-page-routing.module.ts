@@ -25,6 +25,13 @@ const routes: Routes = [
           ),
       },
       {
+        path: "feedback",
+        loadChildren: () =>
+          import("../feedback/feedback.module").then(
+            (m) => m.FeedbackPageModule
+          ),
+      },
+      {
         path: "",
         redirectTo: "/app/tabs/map",
         pathMatch: "full",

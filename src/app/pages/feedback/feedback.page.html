@@ -1,0 +1,126 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Feedback</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Submit Feedback</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <form (ngSubmit)="submit()">
+        <ion-item>
+          <ion-label position="stacked">Overall Impression</ion-label>
+          <ion-textarea [(ngModel)]="form.overall" name="overall" autoGrow="true" placeholder="Great layout, needs..."></ion-textarea>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Positives</ion-label>
+          <ion-textarea [(ngModel)]="form.positives" name="positives" autoGrow="true"></ion-textarea>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Negatives</ion-label>
+          <ion-textarea [(ngModel)]="form.negatives" name="negatives" autoGrow="true"></ion-textarea>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Price Opinion</ion-label>
+          <ion-input [(ngModel)]="form.priceOpinion" name="priceOpinion" placeholder="Fair / High / Low"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Referral Potential</ion-label>
+          <ion-select [(ngModel)]="form.referralPotential" name="referralPotential">
+            <ion-select-option value="Yes">Yes</ion-select-option>
+            <ion-select-option value="No">No</ion-select-option>
+            <ion-select-option value="Maybe">Maybe</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item-divider></ion-item-divider>
+        <ion-item>
+          <ion-label position="stacked">Name</ion-label>
+          <ion-input [(ngModel)]="form.name" name="name" placeholder="John Doe"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Email</ion-label>
+          <ion-input [(ngModel)]="form.email" name="email" type="email"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Phone</ion-label>
+          <ion-input [(ngModel)]="form.phone" name="phone" type="tel"></ion-input>
+        </ion-item>
+
+        <ion-button type="submit" expand="block" [disabled]="submitting">Submit</ion-button>
+        <ion-text color="success" *ngIf="success">{{success}}</ion-text>
+        <ion-text color="warning" *ngIf="error">{{error}}</ion-text>
+      </form>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Feedback Submissions</ion-card-title>
+      <ion-item lines="none">
+        <ion-input placeholder="Search" [(ngModel)]="search" (ionChange)="currentPage=1"></ion-input>
+        <ion-select [(ngModel)]="timeFilter" (ionChange)="currentPage=1">
+          <ion-select-option value="all">All Time</ion-select-option>
+          <ion-select-option value="24h">Last 24h</ion-select-option>
+          <ion-select-option value="7d">Last 7d</ion-select-option>
+          <ion-select-option value="30d">Last 30d</ion-select-option>
+        </ion-select>
+        <ion-select [(ngModel)]="referralFilter" (ionChange)="currentPage=1">
+          <ion-select-option value="all">Referral: Any</ion-select-option>
+          <ion-select-option value="Yes">Yes</ion-select-option>
+          <ion-select-option value="No">No</ion-select-option>
+          <ion-select-option value="Maybe">Maybe</ion-select-option>
+        </ion-select>
+        <ion-button size="small" (click)="exportCSV()">CSV</ion-button>
+        <ion-button size="small" (click)="exportPrint()">Print/PDF</ion-button>
+      </ion-item>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="table-responsive">
+        <table id="feedbackTable">
+          <thead>
+            <tr>
+              <th (click)="setSort('timestamp')">Timestamp <span *ngIf="sortColumn==='timestamp'">{{sortDirection==='asc'?'▲':'▼'}}</span></th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Overall</th>
+              <th>Positives</th>
+              <th>Negatives</th>
+              <th>Price</th>
+              <th (click)="setSort('propertyFeedback.referralPotential')">Referral</th>
+              <th>Lat</th>
+              <th>Lng</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of paginated">
+              <td>{{r.timestamp | date:'short'}}</td>
+              <td>{{r.contact?.name}}</td>
+              <td>{{r.contact?.email}}</td>
+              <td>{{r.propertyFeedback?.overall}}</td>
+              <td>{{r.propertyFeedback?.positives}}</td>
+              <td>{{r.propertyFeedback?.negatives}}</td>
+              <td>{{r.propertyFeedback?.priceOpinion}}</td>
+              <td>{{r.propertyFeedback?.referralPotential}}</td>
+              <td>{{r.location?.coordinates?.latitude | number:'1.4-4'}}</td>
+              <td>{{r.location?.coordinates?.longitude | number:'1.4-4'}}</td>
+            </tr>
+            <tr *ngIf="paginated.length===0"><td colspan="10" class="empty">No feedback yet</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" *ngIf="totalPages>1">
+        <ion-button size="small" (click)="changePage(currentPage-1)" [disabled]="currentPage===1">Prev</ion-button>
+        <span>Page {{currentPage}} / {{totalPages}}</span>
+        <ion-button size="small" (click)="changePage(currentPage+1)" [disabled]="currentPage===totalPages">Next</ion-button>
+      </div>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

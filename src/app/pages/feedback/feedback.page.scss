@@ -1,0 +1,6 @@
+.table-responsive { overflow:auto; }
+#feedbackTable { width:100%; border-collapse: collapse; }
+#feedbackTable th, #feedbackTable td { border:1px solid #ccc; padding:4px; font-size:12px; vertical-align: top; }
+#feedbackTable th { background:#f4f6f8; cursor:pointer; position:sticky; top:0; }
+#feedbackTable .empty { text-align:center; }
+.pagination { display:flex; align-items:center; gap:8px; justify-content:center; margin-top:8px; }
