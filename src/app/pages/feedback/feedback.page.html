@@ -1,126 +1,311 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>Feedback</ion-title>
-  </ion-toolbar>
+<ion-header [translucent]="true">
+    <ion-toolbar color="primary">
+        <ion-title>
+            <ion-icon name="chatbubbles-outline" class="title-icon"></ion-icon>
+            Feedback Analytics
+        </ion-title>
+        <ion-buttons slot="end">
+            <ion-button (click)="refresh()" [disabled]="loading">
+                <ion-icon name="refresh-outline"></ion-icon>
+            </ion-button>
+        </ion-buttons>
+    </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>Submit Feedback</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <form (ngSubmit)="submit()">
-        <ion-item>
-          <ion-label position="stacked">Overall Impression</ion-label>
-          <ion-textarea [(ngModel)]="form.overall" name="overall" autoGrow="true" placeholder="Great layout, needs..."></ion-textarea>
-        </ion-item>
+<ion-content [fullscreen]="true" class="feedback-content">
+    <ion-header collapse="condense">
+        <ion-toolbar>
+            <ion-title size="large">Feedback Analytics</ion-title>
+        </ion-toolbar>
+    </ion-header>
 
-        <ion-item>
-          <ion-label position="stacked">Positives</ion-label>
-          <ion-textarea [(ngModel)]="form.positives" name="positives" autoGrow="true"></ion-textarea>
-        </ion-item>
+    <!-- Summary Cards -->
+    <div class="summary-section">
+        <ion-card class="summary-card">
+            <ion-card-content>
+                <div class="summary-item">
+                    <ion-icon name="document-text-outline" color="primary"></ion-icon>
+                    <div>
+                        <h3>{{filtered.length}}</h3>
+                        <p>Total Records</p>
+                    </div>
+                </div>
+            </ion-card-content>
+        </ion-card>
+        
+        <ion-card class="summary-card">
+            <ion-card-content>
+                <div class="summary-item">
+                    <ion-icon name="thumbs-up-outline" color="success"></ion-icon>
+                    <div>
+                        <h3>{{positiveCount}}</h3>
+                        <p>Positive Referrals</p>
+                    </div>
+                </div>
+            </ion-card-content>
+        </ion-card>
+        
+        <ion-card class="summary-card">
+            <ion-card-content>
+                <div class="summary-item">
+                    <ion-icon name="calendar-outline" color="tertiary"></ion-icon>
+                    <div>
+                        <h3>{{todayCount}}</h3>
+                        <p>Today's Feedback</p>
+                    </div>
+                </div>
+            </ion-card-content>
+        </ion-card>
+    </div>
 
-        <ion-item>
-          <ion-label position="stacked">Negatives</ion-label>
-          <ion-textarea [(ngModel)]="form.negatives" name="negatives" autoGrow="true"></ion-textarea>
-        </ion-item>
+    <!-- Filters Section -->
+    <ion-card class="filters-card">
+        <ion-card-header>
+            <ion-card-title>
+                <ion-icon name="filter-outline"></ion-icon>
+                Filters & Search
+            </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+            <div class="filters-grid">
+                <div class="search-container">
+                    <ion-searchbar 
+                        [(ngModel)]="search" 
+                        (ionInput)="onSearchChange($event)"
+                        placeholder="Search feedback, names, emails..."
+                        show-clear-button="focus">
+                    </ion-searchbar>
+                </div>
+                
+                <div class="filter-group">
+                    <ion-item lines="none">
+                        <ion-label>Time Period</ion-label>
+                        <ion-select 
+                            interface="popover" 
+                            [(ngModel)]="timeFilter" 
+                            (ionChange)="currentPage=1"
+                            [disabled]="startDateTime || endDateTime">
+                            <ion-select-option value="all">All Time</ion-select-option>
+                            <ion-select-option value="24h">Last 24h</ion-select-option>
+                            <ion-select-option value="7d">Last 7 days</ion-select-option>
+                            <ion-select-option value="30d">Last 30 days</ion-select-option>
+                        </ion-select>
+                    </ion-item>
+                </div>
 
-        <ion-item>
-          <ion-label position="stacked">Price Opinion</ion-label>
-          <ion-input [(ngModel)]="form.priceOpinion" name="priceOpinion" placeholder="Fair / High / Low"></ion-input>
-        </ion-item>
+                <div class="date-range-group">
+                    <div class="range-input-group">
+                        <ion-item lines="none">
+                            <ion-label position="stacked">From Date & Time</ion-label>
+                            <input type="datetime-local" class="custom-datetime" 
+                                   [(ngModel)]="startDateTime" (change)="onDateRangeChange()" />
+                        </ion-item>
+                    </div>
+                    <div class="range-input-group">
+                        <ion-item lines="none">
+                            <ion-label position="stacked">To Date & Time</ion-label>
+                            <input type="datetime-local" class="custom-datetime" 
+                                   [(ngModel)]="endDateTime" (change)="onDateRangeChange()" />
+                        </ion-item>
+                    </div>
+                    <ion-button 
+                        fill="clear" 
+                        color="medium" 
+                        (click)="clearRange()"
+                        [disabled]="!startDateTime && !endDateTime">
+                        <ion-icon name="close-circle-outline"></ion-icon>
+                        Clear
+                    </ion-button>
+                </div>
 
-        <ion-item>
-          <ion-label position="stacked">Referral Potential</ion-label>
-          <ion-select [(ngModel)]="form.referralPotential" name="referralPotential">
-            <ion-select-option value="Yes">Yes</ion-select-option>
-            <ion-select-option value="No">No</ion-select-option>
-            <ion-select-option value="Maybe">Maybe</ion-select-option>
-          </ion-select>
-        </ion-item>
+                <div class="filter-group">
+                    <ion-item lines="none">
+                        <ion-label>Referral Filter</ion-label>
+                        <ion-select interface="popover" [(ngModel)]="referralFilter" (ionChange)="currentPage=1">
+                            <ion-select-option value="all">All Referrals</ion-select-option>
+                            <ion-select-option value="Yes">Yes</ion-select-option>
+                            <ion-select-option value="No">No</ion-select-option>
+                            <ion-select-option value="Maybe">Maybe</ion-select-option>
+                        </ion-select>
+                    </ion-item>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <ion-button fill="outline" (click)="exportCSV()" [disabled]="!filtered.length">
+                    <ion-icon name="download-outline" slot="start"></ion-icon>
+                    Export CSV
+                </ion-button>
+                <ion-button fill="outline" (click)="exportPrint()" [disabled]="!filtered.length">
+                    <ion-icon name="print-outline" slot="start"></ion-icon>
+                    Print/PDF
+                </ion-button>
+            </div>
+        </ion-card-content>
+    </ion-card>
 
-        <ion-item-divider></ion-item-divider>
-        <ion-item>
-          <ion-label position="stacked">Name</ion-label>
-          <ion-input [(ngModel)]="form.name" name="name" placeholder="John Doe"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label position="stacked">Email</ion-label>
-          <ion-input [(ngModel)]="form.email" name="email" type="email"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label position="stacked">Phone</ion-label>
-          <ion-input [(ngModel)]="form.phone" name="phone" type="tel"></ion-input>
-        </ion-item>
+    <!-- Status Section -->
+    <div class="status-section" *ngIf="status">
+        <ion-chip [color]="getStatusColor()">
+            <ion-icon [name]="getStatusIcon()"></ion-icon>
+            <ion-label>{{status}}</ion-label>
+        </ion-chip>
+    </div>
 
-        <ion-button type="submit" expand="block" [disabled]="submitting">Submit</ion-button>
-        <ion-text color="success" *ngIf="success">{{success}}</ion-text>
-        <ion-text color="warning" *ngIf="error">{{error}}</ion-text>
-      </form>
-    </ion-card-content>
-  </ion-card>
-
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>Feedback Submissions</ion-card-title>
-      <ion-item lines="none">
-        <ion-input placeholder="Search" [(ngModel)]="search" (ionChange)="currentPage=1"></ion-input>
-        <ion-select [(ngModel)]="timeFilter" (ionChange)="currentPage=1">
-          <ion-select-option value="all">All Time</ion-select-option>
-          <ion-select-option value="24h">Last 24h</ion-select-option>
-          <ion-select-option value="7d">Last 7d</ion-select-option>
-          <ion-select-option value="30d">Last 30d</ion-select-option>
-        </ion-select>
-        <ion-select [(ngModel)]="referralFilter" (ionChange)="currentPage=1">
-          <ion-select-option value="all">Referral: Any</ion-select-option>
-          <ion-select-option value="Yes">Yes</ion-select-option>
-          <ion-select-option value="No">No</ion-select-option>
-          <ion-select-option value="Maybe">Maybe</ion-select-option>
-        </ion-select>
-        <ion-button size="small" (click)="exportCSV()">CSV</ion-button>
-        <ion-button size="small" (click)="exportPrint()">Print/PDF</ion-button>
-      </ion-item>
-    </ion-card-header>
-    <ion-card-content>
-      <div class="table-responsive">
-        <table id="feedbackTable">
-          <thead>
-            <tr>
-              <th (click)="setSort('timestamp')">Timestamp <span *ngIf="sortColumn==='timestamp'">{{sortDirection==='asc'?'▲':'▼'}}</span></th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Overall</th>
-              <th>Positives</th>
-              <th>Negatives</th>
-              <th>Price</th>
-              <th (click)="setSort('propertyFeedback.referralPotential')">Referral</th>
-              <th>Lat</th>
-              <th>Lng</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let r of paginated">
-              <td>{{r.timestamp | date:'short'}}</td>
-              <td>{{r.contact?.name}}</td>
-              <td>{{r.contact?.email}}</td>
-              <td>{{r.propertyFeedback?.overall}}</td>
-              <td>{{r.propertyFeedback?.positives}}</td>
-              <td>{{r.propertyFeedback?.negatives}}</td>
-              <td>{{r.propertyFeedback?.priceOpinion}}</td>
-              <td>{{r.propertyFeedback?.referralPotential}}</td>
-              <td>{{r.location?.coordinates?.latitude | number:'1.4-4'}}</td>
-              <td>{{r.location?.coordinates?.longitude | number:'1.4-4'}}</td>
-            </tr>
-            <tr *ngIf="paginated.length===0"><td colspan="10" class="empty">No feedback yet</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="pagination" *ngIf="totalPages>1">
-        <ion-button size="small" (click)="changePage(currentPage-1)" [disabled]="currentPage===1">Prev</ion-button>
-        <span>Page {{currentPage}} / {{totalPages}}</span>
-        <ion-button size="small" (click)="changePage(currentPage+1)" [disabled]="currentPage===totalPages">Next</ion-button>
-      </div>
-    </ion-card-content>
-  </ion-card>
+    <!-- Data Table -->
+    <ion-card class="data-card">
+        <ion-card-header>
+            <ion-card-title>
+                <ion-icon name="grid-outline"></ion-icon>
+                Feedback Records
+                <span class="record-count">({{filtered.length}} records)</span>
+            </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+            <div class="table-container">
+                <ion-spinner *ngIf="loading" name="circles"></ion-spinner>
+                <div class="table-responsive" [class.loading]="loading">
+                    <table id="feedbackTable" class="professional-table">
+                        <thead>
+                            <tr>
+                                <th (click)="setSort('timestamp')" class="sortable">
+                                    <div class="header-content">
+                                        <ion-icon name="calendar-outline"></ion-icon>
+                                        Date
+                                        <ion-icon *ngIf="sortColumn==='timestamp'" 
+                                                  [name]="sortDirection==='asc'?'chevron-up':'chevron-down'"
+                                                  class="sort-indicator"></ion-icon>
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="header-content">
+                                        <ion-icon name="time-outline"></ion-icon>
+                                        Time
+                                    </div>
+                                </th>
+                                <th (click)="setSort('contact.name')" class="sortable">
+                                    <div class="header-content">
+                                        <ion-icon name="person-outline"></ion-icon>
+                                        Name
+                                        <ion-icon *ngIf="sortColumn==='contact.name'" 
+                                                  [name]="sortDirection==='asc'?'chevron-up':'chevron-down'"
+                                                  class="sort-indicator"></ion-icon>
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="header-content">
+                                        <ion-icon name="chatbubble-outline"></ion-icon>
+                                        Feedback
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="header-content">
+                                        <ion-icon name="mail-outline"></ion-icon>
+                                        Email
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="header-content">
+                                        <ion-icon name="thumbs-up-outline"></ion-icon>
+                                        Positives
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="header-content">
+                                        <ion-icon name="thumbs-down-outline"></ion-icon>
+                                        Negatives
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="header-content">
+                                        <ion-icon name="star-outline"></ion-icon>
+                                        Referral
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let r of paginated; trackBy: trackByFn" class="data-row">
+                                <td class="date-cell">{{formatDate(r.timestamp)}}</td>
+                                <td class="time-cell">{{formatTime(r.timestamp)}}</td>
+                                <td class="name-cell">
+                                    <div class="cell-content">
+                                        <ion-avatar *ngIf="r.contact?.name" class="mini-avatar">
+                                            <div class="avatar-text">{{getInitials(r.contact.name)}}</div>
+                                        </ion-avatar>
+                                        {{r.contact?.name || '—'}}
+                                    </div>
+                                </td>
+                                <td class="feedback-cell">
+                                    <div class="feedback-text" [title]="r.propertyFeedback?.overall">
+                                        {{truncateText(r.propertyFeedback?.overall, 50)}}
+                                    </div>
+                                </td>
+                                <td class="email-cell">{{r.contact?.email || '—'}}</td>
+                                <td class="positives-cell">
+                                    <div class="positives-text" [title]="r.propertyFeedback?.positives">
+                                        {{truncateText(r.propertyFeedback?.positives, 30)}}
+                                    </div>
+                                </td>
+                                <td class="negatives-cell">
+                                    <div class="negatives-text" [title]="r.propertyFeedback?.negatives">
+                                        {{truncateText(r.propertyFeedback?.negatives, 30)}}
+                                    </div>
+                                </td>
+                                <td class="referral-cell">
+                                    <ion-chip [color]="getReferralColor(r.propertyFeedback?.referralPotential)">
+                                        <ion-icon [name]="getReferralIcon(r.propertyFeedback?.referralPotential)"></ion-icon>
+                                        <ion-label>{{r.propertyFeedback?.referralPotential || '—'}}</ion-label>
+                                    </ion-chip>
+                                </td>
+                            </tr>
+                            <tr *ngIf="paginated.length===0 && !loading" class="empty-state">
+                                <td colspan="8">
+                                    <div class="empty-content">
+                                        <ion-icon name="document-outline" size="large"></ion-icon>
+                                        <h3>No feedback records found</h3>
+                                        <p>Try adjusting your filters or refresh the data</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Enhanced Pagination -->
+            <div class="pagination-container" *ngIf="totalPages > 1">
+                <div class="pagination-info">
+                    Showing {{(currentPage-1)*pageSize + 1}} to {{Math.min(currentPage*pageSize, filtered.length)}} of {{filtered.length}} records
+                </div>
+                <div class="pagination-controls">
+                    <ion-button fill="clear" (click)="changePage(1)" [disabled]="currentPage === 1">
+                        <ion-icon name="chevron-back-outline"></ion-icon>
+                        <ion-icon name="chevron-back-outline"></ion-icon>
+                    </ion-button>
+                    <ion-button fill="clear" (click)="changePage(currentPage-1)" [disabled]="currentPage === 1">
+                        <ion-icon name="chevron-back-outline"></ion-icon>
+                    </ion-button>
+                    
+                    <div class="page-numbers">
+                        <ion-button 
+                            *ngFor="let page of getPageNumbers()" 
+                            fill="clear"
+                            [color]="page === currentPage ? 'primary' : 'medium'"
+                            (click)="changePage(page)">
+                            {{page}}
+                        </ion-button>
+                    </div>
+                    
+                    <ion-button fill="clear" (click)="changePage(currentPage+1)" [disabled]="currentPage === totalPages">
+                        <ion-icon name="chevron-forward-outline"></ion-icon>
+                    </ion-button>
+                    <ion-button fill="clear" (click)="changePage(totalPages)" [disabled]="currentPage === totalPages">
+                        <ion-icon name="chevron-forward-outline"></ion-icon>
+                        <ion-icon name="chevron-forward-outline"></ion-icon>
+                    </ion-button>
+                </div>
+            </div>
+        </ion-card-content>
+    </ion-card>
 </ion-content>

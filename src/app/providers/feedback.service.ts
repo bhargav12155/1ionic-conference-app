@@ -61,31 +61,6 @@ export class FeedbackService {
     return [...this.submissions];
   }
 
-  async buildContext(): Promise<{ device?: any; network?: any; location?: any }> {
-    try {
-      const [device, network] = await Promise.all([
-        Device.getInfo().catch(() => undefined),
-        Network.getStatus().catch(() => undefined),
-      ]);
-      let location;
-      try {
-        const coords = await Geolocation.getCurrentPosition({ enableHighAccuracy: true, timeout: 5000 });
-        location = {
-          coordinates: {
-            latitude: coords.coords.latitude,
-            longitude: coords.coords.longitude,
-          },
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        };
-      } catch (e) {
-        // ignore if blocked
-      }
-      return { device, network, location };
-    } catch (e) {
-      return {};
-    }
-  }
-
   private getApiBase(): string {
     const isLocal =
       window.location.protocol === "file:" ||
@@ -94,29 +69,78 @@ export class FeedbackService {
     return isLocal ? "http://localhost:3000" : "https://loc-end.onrender.com";
   }
 
-  async submit(feedback: Omit<FeedbackSubmission, "id">): Promise<FeedbackSubmission> {
+  // Fetch list from backend (read-only). No POST here.
+  async fetchFromServer(): Promise<FeedbackSubmission[]> {
     const API_BASE = this.getApiBase();
     try {
-      const response = await fetch(`${API_BASE}/api/feedback`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(feedback),
+      const res = await fetch(`${API_BASE}/api/feedback`, {
+        headers: { Accept: "application/json" },
       });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const data = await response.json();
-      const stored: FeedbackSubmission = { ...feedback, id: data.id || data._id };
-      this.submissions.unshift(stored);
-      this.persist();
-      return stored;
+      if (!res.ok) throw new Error(`GET /api/feedback ${res.status}`);
+      const data = await res.json();
+      if (!Array.isArray(data)) return [];
+      // Normalize minimal fields (defensive)
+      return data.map((d: any) => ({
+        id: d.id || d._id,
+        timestamp: d.timestamp || d.createdAt || new Date().toISOString(),
+        sessionId: d.sessionId || "n/a",
+        propertyFeedback: d.propertyFeedback || {
+          overall: d.overall || "",
+          positives: d.positives || "",
+          negatives: d.negatives || "",
+          priceOpinion: d.priceOpinion || "",
+          referralPotential: d.referralPotential || d.referral || "",
+        },
+        contact: d.contact || {
+          name: d.name || "",
+          email: d.email || "",
+          phone: d.phone || "",
+        },
+        location: d.location,
+        device: d.device,
+        network: d.network,
+      }));
     } catch (e) {
-      // Still store locally with temp id for offline
-      const stored: FeedbackSubmission = { ...feedback, id: "local_" + Date.now() };
-      this.submissions.unshift(stored);
-      this.persist();
-      throw e; // let caller know
+      console.warn("Failed to fetch feedback list", e);
+      return [];
     }
+  }
+
+  mergeRemote(list: FeedbackSubmission[]) {
+    if (!list.length) return;
+    const existingIds = new Set(
+      this.submissions.map((s) => s.id || s.timestamp + s.sessionId)
+    );
+    const toAdd = list.filter(
+      (r) => !existingIds.has(r.id || r.timestamp + r.sessionId)
+    );
+    if (toAdd.length) {
+      this.submissions = [...toAdd, ...this.submissions];
+      this.persist();
+    }
+  }
+
+  // Retain submit method ONLY for explicit future use; not called automatically anywhere.
+  async submit(
+    feedback: Omit<FeedbackSubmission, "id">
+  ): Promise<FeedbackSubmission> {
+    const API_BASE = this.getApiBase();
+    const response = await fetch(`${API_BASE}/api/feedback`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(feedback),
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    const stored: FeedbackSubmission = {
+      ...feedback,
+      id: data.id || data._id,
+    };
+    this.submissions.unshift(stored);
+    this.persist();
+    return stored;
   }
 }
