@@ -462,7 +462,7 @@ function ActivityLogPage_div_39_Template(rf, ctx) {
   if (rf & 2) {
     const ctx_r2 = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵnextContext"]();
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](3);
-    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtextInterpolate3"](" Showing ", (ctx_r2.currentPage - 1) * ctx_r2.pageSize + 1, " - ", ctx_r2.Math.min(ctx_r2.currentPage * ctx_r2.pageSize, ctx_r2.filteredEvents.length), " of ", ctx_r2.filteredEvents.length, " entries ");
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtextInterpolate3"](" Showing ", (ctx_r2.currentPage - 1) * ctx_r2.pageSize + 1, " - ", ctx_r2.getMin(ctx_r2.currentPage * ctx_r2.pageSize, ctx_r2.filteredEvents.length), " of ", ctx_r2.filteredEvents.length, " entries ");
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](2);
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("disabled", ctx_r2.currentPage === 1);
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](3);
@@ -791,6 +791,28 @@ class ActivityLogPage {
       this.jumpToPage(page);
     }
   }
+  // Helper method for template to access Math.min
+  getMin(a, b) {
+    return Math.min(a, b);
+  }
+  setSort(column) {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === "asc" ? "desc" : "asc";
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = "asc";
+    }
+  }
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+    }
+  }
+  prevPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+    }
+  }
 }
 _ActivityLogPage = ActivityLogPage;
 _ActivityLogPage.ɵfac = function ActivityLogPage_Factory(t) {
@@ -937,6 +959,9 @@ const routes = [{
     path: "activity-log",
     loadChildren: () => Promise.resolve(/*! import() */).then(__webpack_require__.bind(__webpack_require__, /*! ../activity-log/activity-log.module */ 472)).then(m => m.ActivityLogModule)
   }, {
+    path: "feedback",
+    loadChildren: () => __webpack_require__.e(/*! import() */ "src_app_pages_feedback_feedback_module_ts").then(__webpack_require__.bind(__webpack_require__, /*! ../feedback/feedback.module */ 9846)).then(m => m.FeedbackPageModule)
+  }, {
     path: "",
     redirectTo: "/app/tabs/map",
     pathMatch: "full"
@@ -1030,9 +1055,9 @@ _TabsPage.ɵfac = function TabsPage_Factory(t) {
 _TabsPage.ɵcmp = /*@__PURE__*/_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineComponent"]({
   type: _TabsPage,
   selectors: [["ng-component"]],
-  decls: 14,
+  decls: 18,
   vars: 0,
-  consts: [["slot", "bottom"], ["tab", "users"], ["name", "people"], ["tab", "map"], ["name", "location"], ["tab", "activity-log"], ["name", "list"]],
+  consts: [["slot", "bottom"], ["tab", "users"], ["name", "people"], ["tab", "map"], ["name", "location"], ["tab", "activity-log"], ["name", "list"], ["tab", "feedback"], ["name", "chatbubbles"]],
   template: function TabsPage_Template(rf, ctx) {
     if (rf & 1) {
       _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](0, "ion-tabs")(1, "ion-tab-bar", 0)(2, "ion-tab-button", 1);
@@ -1049,6 +1074,11 @@ _TabsPage.ɵcmp = /*@__PURE__*/_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵd
       _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](11, "ion-icon", 6);
       _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](12, "ion-label");
       _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](13, "Activity Log");
+      _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]()();
+      _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](14, "ion-tab-button", 7);
+      _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](15, "ion-icon", 8);
+      _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](16, "ion-label");
+      _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](17, "Feedback");
       _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]()()()();
     }
   },

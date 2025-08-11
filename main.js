@@ -125,6 +125,10 @@ class AppComponent {
       title: "Activity Log",
       url: "/app/tabs/activity-log",
       icon: "list"
+    }, {
+      title: "Feedback",
+      url: "/app/tabs/feedback",
+      icon: "chatbubbles"
     }];
     this.loggedIn = false; // No authentication system
     this.dark = false;
