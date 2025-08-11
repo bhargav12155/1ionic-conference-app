@@ -40,7 +40,7 @@ export class FeedbackPage implements OnInit, OnDestroy {
     this.loading = showLoading;
     if (showLoading) this.status = "Loading feedback data...";
     else this.status = "Syncing latest data...";
-    
+
     try {
       const remote = await this.feedbackService.fetchFromServer();
       this.feedbackService.mergeRemote(remote);
@@ -55,12 +55,16 @@ export class FeedbackPage implements OnInit, OnDestroy {
 
   // Analytics getters
   get positiveCount(): number {
-    return this.filtered.filter(f => f.propertyFeedback?.referralPotential === 'Yes').length;
+    return this.filtered.filter(
+      (f) => f.propertyFeedback?.referralPotential === "Yes"
+    ).length;
   }
 
   get todayCount(): number {
     const today = new Date().toDateString();
-    return this.filtered.filter(f => new Date(f.timestamp).toDateString() === today).length;
+    return this.filtered.filter(
+      (f) => new Date(f.timestamp).toDateString() === today
+    ).length;
   }
 
   // UI Helper methods
@@ -70,7 +74,50 @@ export class FeedbackPage implements OnInit, OnDestroy {
   }
 
   onDateRangeChange() {
+    // Validate and fix date range if needed
+    if (this.startDateTime && this.endDateTime) {
+      const startMs = new Date(this.startDateTime).getTime();
+      const endMs = new Date(this.endDateTime).getTime();
+
+      // If end is before start, swap them
+      if (endMs < startMs) {
+        const temp = this.startDateTime;
+        this.startDateTime = this.endDateTime;
+        this.endDateTime = temp;
+      }
+    }
     this.currentPage = 1;
+  }
+
+  // Check if date range is valid
+  get isDateRangeValid(): boolean {
+    if (!this.startDateTime || !this.endDateTime) return true;
+    return (
+      new Date(this.startDateTime).getTime() <=
+      new Date(this.endDateTime).getTime()
+    );
+  }
+
+  // Get current filter info for display
+  get filterInfo(): string {
+    if (this.hasCustomRange()) {
+      const start = this.startDateTime
+        ? new Date(this.startDateTime).toLocaleString()
+        : "Start";
+      const end = this.endDateTime
+        ? new Date(this.endDateTime).toLocaleString()
+        : "End";
+      const valid = this.isDateRangeValid
+        ? ""
+        : " (Invalid Range - Auto-corrected)";
+      return `Custom range: ${start} to ${end}${valid}`;
+    }
+    if (this.timeFilter !== "all") {
+      return `Showing: ${this.timeFilter
+        .replace("h", " hours")
+        .replace("d", " days")}`;
+    }
+    return "Showing: All records";
   }
 
   trackByFn(index: number, item: FeedbackSubmission): string {
@@ -78,62 +125,77 @@ export class FeedbackPage implements OnInit, OnDestroy {
   }
 
   getInitials(name: string): string {
-    if (!name) return '';
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    if (!name) return "";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
   }
 
   truncateText(text: string | undefined, length: number): string {
-    if (!text) return '—';
-    return text.length > length ? text.substring(0, length) + '...' : text;
+    if (!text) return "—";
+    return text.length > length ? text.substring(0, length) + "..." : text;
   }
 
   getReferralColor(referral: string | undefined): string {
     switch (referral) {
-      case 'Yes': return 'success';
-      case 'No': return 'danger';
-      case 'Maybe': return 'warning';
-      default: return 'medium';
+      case "Yes":
+        return "success";
+      case "No":
+        return "danger";
+      case "Maybe":
+        return "warning";
+      default:
+        return "medium";
     }
   }
 
   getReferralIcon(referral: string | undefined): string {
     switch (referral) {
-      case 'Yes': return 'thumbs-up';
-      case 'No': return 'thumbs-down';
-      case 'Maybe': return 'help';
-      default: return 'remove';
+      case "Yes":
+        return "thumbs-up";
+      case "No":
+        return "thumbs-down";
+      case "Maybe":
+        return "help";
+      default:
+        return "remove";
     }
   }
 
   getStatusColor(): string {
-    if (this.status.includes('Failed')) return 'danger';
-    if (this.status.includes('Successfully')) return 'success';
-    if (this.status.includes('Loading') || this.status.includes('Syncing')) return 'primary';
-    return 'medium';
+    if (this.status.includes("Failed")) return "danger";
+    if (this.status.includes("Successfully")) return "success";
+    if (this.status.includes("Loading") || this.status.includes("Syncing"))
+      return "primary";
+    return "medium";
   }
 
   getStatusIcon(): string {
-    if (this.status.includes('Failed')) return 'alert-circle';
-    if (this.status.includes('Successfully')) return 'checkmark-circle';
-    if (this.status.includes('Loading') || this.status.includes('Syncing')) return 'sync';
-    return 'information-circle';
+    if (this.status.includes("Failed")) return "alert-circle";
+    if (this.status.includes("Successfully")) return "checkmark-circle";
+    if (this.status.includes("Loading") || this.status.includes("Syncing"))
+      return "sync";
+    return "information-circle";
   }
 
   getPageNumbers(): number[] {
     const total = this.totalPages;
     const current = this.currentPage;
     const delta = 2;
-    
+
     let start = Math.max(1, current - delta);
     let end = Math.min(total, current + delta);
-    
+
     if (current <= delta) {
       end = Math.min(total, 2 * delta + 1);
     }
     if (current + delta >= total) {
       start = Math.max(1, total - 2 * delta);
     }
-    
+
     const pages = [];
     for (let i = start; i <= end; i++) {
       pages.push(i);
@@ -142,7 +204,7 @@ export class FeedbackPage implements OnInit, OnDestroy {
   }
 
   // Helper to know if custom range active
-  private hasCustomRange(): boolean {
+  hasCustomRange(): boolean {
     return !!(this.startDateTime || this.endDateTime);
   }
   clearRange() {
@@ -177,16 +239,40 @@ export class FeedbackPage implements OnInit, OnDestroy {
 
     // Custom date/time range filter overrides relative selection
     if (this.hasCustomRange()) {
-      const startMs = this.startDateTime
+      let startMs = this.startDateTime
         ? new Date(this.startDateTime).getTime()
         : -Infinity;
-      const endMs = this.endDateTime
+      let endMs = this.endDateTime
         ? new Date(this.endDateTime).getTime()
         : Infinity;
+
+      // Auto-correct invalid ranges (end before start)
+      if (startMs > endMs && startMs !== -Infinity && endMs !== Infinity) {
+        [startMs, endMs] = [endMs, startMs]; // Swap them
+      }
+
+      console.log("Date Range Filter:", {
+        startDateTime: this.startDateTime,
+        endDateTime: this.endDateTime,
+        startMs: new Date(startMs).toLocaleString(),
+        endMs: new Date(endMs).toLocaleString(),
+        recordCount: data.length,
+        sampleRecord: data[0]
+          ? {
+              timestamp: data[0].timestamp,
+              timestampMs: new Date(data[0].timestamp).getTime(),
+              name: data[0].contact?.name,
+            }
+          : null,
+      });
+
       data = data.filter((d) => {
         const t = new Date(d.timestamp).getTime();
-        return t >= startMs && t <= endMs;
+        const matches = t >= startMs && t <= endMs;
+        return matches;
       });
+
+      console.log("After date filter:", data.length, "records");
     }
 
     if (this.referralFilter !== "all") {

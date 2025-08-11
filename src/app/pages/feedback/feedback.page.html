@@ -1,12 +1,15 @@
 <ion-header [translucent]="true">
-    <ion-toolbar color="primary">
+    <ion-toolbar>
         <ion-title>
-            <ion-icon name="chatbubbles-outline" class="title-icon"></ion-icon>
-            Feedback Analytics
+            <ion-icon name="analytics" class="title-icon"></ion-icon>
+            Feedback Dashboard
         </ion-title>
         <ion-buttons slot="end">
-            <ion-button (click)="refresh()" [disabled]="loading">
-                <ion-icon name="refresh-outline"></ion-icon>
+            <ion-button fill="clear" (click)="refresh()">
+                <ion-icon name="refresh-circle" slot="icon-only"></ion-icon>
+            </ion-button>
+            <ion-button fill="clear" (click)="refresh()">
+                <ion-icon name="reload" slot="icon-only"></ion-icon>
             </ion-button>
         </ion-buttons>
     </ion-toolbar>
@@ -15,28 +18,31 @@
 <ion-content [fullscreen]="true" class="feedback-content">
     <ion-header collapse="condense">
         <ion-toolbar>
-            <ion-title size="large">Feedback Analytics</ion-title>
+            <ion-title size="large">
+                <ion-icon name="analytics" class="title-icon"></ion-icon>
+                Feedback Dashboard
+            </ion-title>
         </ion-toolbar>
     </ion-header>
 
-    <!-- Summary Cards -->
+    <!-- Enhanced Summary Cards -->
     <div class="summary-section">
-        <ion-card class="summary-card">
+        <ion-card class="summary-card glass-card">
             <ion-card-content>
                 <div class="summary-item">
-                    <ion-icon name="document-text-outline" color="primary"></ion-icon>
+                    <ion-icon name="documents"></ion-icon>
                     <div>
                         <h3>{{filtered.length}}</h3>
-                        <p>Total Records</p>
+                        <p>Total Feedback</p>
                     </div>
                 </div>
             </ion-card-content>
         </ion-card>
-        
-        <ion-card class="summary-card">
+
+        <ion-card class="summary-card glass-card">
             <ion-card-content>
                 <div class="summary-item">
-                    <ion-icon name="thumbs-up-outline" color="success"></ion-icon>
+                    <ion-icon name="thumbs-up"></ion-icon>
                     <div>
                         <h3>{{positiveCount}}</h3>
                         <p>Positive Referrals</p>
@@ -44,11 +50,11 @@
                 </div>
             </ion-card-content>
         </ion-card>
-        
-        <ion-card class="summary-card">
+
+        <ion-card class="summary-card glass-card">
             <ion-card-content>
                 <div class="summary-item">
-                    <ion-icon name="calendar-outline" color="tertiary"></ion-icon>
+                    <ion-icon name="today"></ion-icon>
                     <div>
                         <h3>{{todayCount}}</h3>
                         <p>Today's Feedback</p>
@@ -56,34 +62,40 @@
                 </div>
             </ion-card-content>
         </ion-card>
+
+        <ion-card class="summary-card glass-card">
+            <ion-card-content>
+                <div class="summary-item">
+                    <ion-icon name="trending-up"></ion-icon>
+                    <div>
+                        <h3>{{positiveCount}}</h3>
+                        <p>Total Referrals</p>
+                    </div>
+                </div>
+            </ion-card-content>
+        </ion-card>
     </div>
 
-    <!-- Filters Section -->
-    <ion-card class="filters-card">
+    <!-- Enhanced Filters Section -->
+    <ion-card class="filters-card glass-card">
         <ion-card-header>
             <ion-card-title>
-                <ion-icon name="filter-outline"></ion-icon>
-                Filters & Search
+                <ion-icon name="options"></ion-icon>
+                Advanced Filters
             </ion-card-title>
         </ion-card-header>
         <ion-card-content>
             <div class="filters-grid">
                 <div class="search-container">
-                    <ion-searchbar 
-                        [(ngModel)]="search" 
-                        (ionInput)="onSearchChange($event)"
-                        placeholder="Search feedback, names, emails..."
-                        show-clear-button="focus">
+                    <ion-searchbar [(ngModel)]="search" (ionInput)="onSearchChange($event)"
+                        placeholder="🔍 Search feedback, names, emails..." show-clear-button="focus">
                     </ion-searchbar>
                 </div>
-                
+
                 <div class="filter-group">
                     <ion-item lines="none">
                         <ion-label>Time Period</ion-label>
-                        <ion-select 
-                            interface="popover" 
-                            [(ngModel)]="timeFilter" 
-                            (ionChange)="currentPage=1"
+                        <ion-select interface="popover" [(ngModel)]="timeFilter" (ionChange)="currentPage=1"
                             [disabled]="startDateTime || endDateTime">
                             <ion-select-option value="all">All Time</ion-select-option>
                             <ion-select-option value="24h">Last 24h</ion-select-option>
@@ -97,21 +109,18 @@
                     <div class="range-input-group">
                         <ion-item lines="none">
                             <ion-label position="stacked">From Date & Time</ion-label>
-                            <input type="datetime-local" class="custom-datetime" 
-                                   [(ngModel)]="startDateTime" (change)="onDateRangeChange()" />
+                            <input type="datetime-local" class="custom-datetime" [(ngModel)]="startDateTime"
+                                (change)="onDateRangeChange()" />
                         </ion-item>
                     </div>
                     <div class="range-input-group">
                         <ion-item lines="none">
                             <ion-label position="stacked">To Date & Time</ion-label>
-                            <input type="datetime-local" class="custom-datetime" 
-                                   [(ngModel)]="endDateTime" (change)="onDateRangeChange()" />
+                            <input type="datetime-local" class="custom-datetime" [(ngModel)]="endDateTime"
+                                (change)="onDateRangeChange()" />
                         </ion-item>
                     </div>
-                    <ion-button 
-                        fill="clear" 
-                        color="medium" 
-                        (click)="clearRange()"
+                    <ion-button fill="clear" color="medium" (click)="clearRange()"
                         [disabled]="!startDateTime && !endDateTime">
                         <ion-icon name="close-circle-outline"></ion-icon>
                         Clear
@@ -130,7 +139,7 @@
                     </ion-item>
                 </div>
             </div>
-            
+
             <div class="action-buttons">
                 <ion-button fill="outline" (click)="exportCSV()" [disabled]="!filtered.length">
                     <ion-icon name="download-outline" slot="start"></ion-icon>
@@ -140,6 +149,14 @@
                     <ion-icon name="print-outline" slot="start"></ion-icon>
                     Print/PDF
                 </ion-button>
+            </div>
+
+            <!-- Filter Info Display -->
+            <div class="filter-info" *ngIf="hasCustomRange() || timeFilter !== 'all'">
+                <ion-chip [color]="isDateRangeValid ? 'primary' : 'warning'">
+                    <ion-icon [name]="isDateRangeValid ? 'funnel' : 'warning'"></ion-icon>
+                    <ion-label>{{filterInfo}}</ion-label>
+                </ion-chip>
             </div>
         </ion-card-content>
     </ion-card>
@@ -152,13 +169,13 @@
         </ion-chip>
     </div>
 
-    <!-- Data Table -->
-    <ion-card class="data-card">
+    <!-- Enhanced Data Table -->
+    <ion-card class="data-card glass-card">
         <ion-card-header>
             <ion-card-title>
-                <ion-icon name="grid-outline"></ion-icon>
-                Feedback Records
-                <span class="record-count">({{filtered.length}} records)</span>
+                <ion-icon name="library"></ion-icon>
+                Feedback Database
+                <span class="record-count">{{filtered.length}} entries</span>
             </ion-card-title>
         </ion-card-header>
         <ion-card-content>
@@ -170,56 +187,56 @@
                             <tr>
                                 <th (click)="setSort('timestamp')" class="sortable">
                                     <div class="header-content">
-                                        <ion-icon name="calendar-outline"></ion-icon>
+                                        <ion-icon name="calendar"></ion-icon>
                                         Date
-                                        <ion-icon *ngIf="sortColumn==='timestamp'" 
-                                                  [name]="sortDirection==='asc'?'chevron-up':'chevron-down'"
-                                                  class="sort-indicator"></ion-icon>
+                                        <ion-icon *ngIf="sortColumn==='timestamp'"
+                                            [name]="sortDirection==='asc'?'chevron-up':'chevron-down'"
+                                            class="sort-indicator"></ion-icon>
                                     </div>
                                 </th>
                                 <th>
                                     <div class="header-content">
-                                        <ion-icon name="time-outline"></ion-icon>
+                                        <ion-icon name="time"></ion-icon>
                                         Time
                                     </div>
                                 </th>
                                 <th (click)="setSort('contact.name')" class="sortable">
                                     <div class="header-content">
-                                        <ion-icon name="person-outline"></ion-icon>
+                                        <ion-icon name="person"></ion-icon>
                                         Name
-                                        <ion-icon *ngIf="sortColumn==='contact.name'" 
-                                                  [name]="sortDirection==='asc'?'chevron-up':'chevron-down'"
-                                                  class="sort-indicator"></ion-icon>
+                                        <ion-icon *ngIf="sortColumn==='contact.name'"
+                                            [name]="sortDirection==='asc'?'chevron-up':'chevron-down'"
+                                            class="sort-indicator"></ion-icon>
                                     </div>
                                 </th>
                                 <th>
                                     <div class="header-content">
-                                        <ion-icon name="chatbubble-outline"></ion-icon>
+                                        <ion-icon name="chatbubble-ellipses"></ion-icon>
                                         Feedback
                                     </div>
                                 </th>
                                 <th>
                                     <div class="header-content">
-                                        <ion-icon name="mail-outline"></ion-icon>
+                                        <ion-icon name="at"></ion-icon>
                                         Email
                                     </div>
                                 </th>
                                 <th>
                                     <div class="header-content">
-                                        <ion-icon name="thumbs-up-outline"></ion-icon>
+                                        <ion-icon name="heart"></ion-icon>
                                         Positives
                                     </div>
                                 </th>
                                 <th>
                                     <div class="header-content">
-                                        <ion-icon name="thumbs-down-outline"></ion-icon>
-                                        Negatives
+                                        <ion-icon name="sad"></ion-icon>
+                                        Improvements
                                     </div>
                                 </th>
                                 <th>
                                     <div class="header-content">
-                                        <ion-icon name="star-outline"></ion-icon>
-                                        Referral
+                                        <ion-icon name="star"></ion-icon>
+                                        Referral Status
                                     </div>
                                 </th>
                             </tr>
@@ -254,7 +271,8 @@
                                 </td>
                                 <td class="referral-cell">
                                     <ion-chip [color]="getReferralColor(r.propertyFeedback?.referralPotential)">
-                                        <ion-icon [name]="getReferralIcon(r.propertyFeedback?.referralPotential)"></ion-icon>
+                                        <ion-icon
+                                            [name]="getReferralIcon(r.propertyFeedback?.referralPotential)"></ion-icon>
                                         <ion-label>{{r.propertyFeedback?.referralPotential || '—'}}</ion-label>
                                     </ion-chip>
                                 </td>
@@ -272,11 +290,31 @@
                     </table>
                 </div>
             </div>
-            
+
+            <!-- Professional Action Bar -->
+            <div class="action-bar" *ngIf="filtered.length > 0">
+                <div class="export-section">
+                    <ion-button fill="solid" color="success" (click)="exportToCSV()" class="export-btn">
+                        <ion-icon name="download" slot="start"></ion-icon>
+                        Export CSV
+                    </ion-button>
+                    <ion-button fill="outline" color="primary" (click)="printTable()" class="print-btn">
+                        <ion-icon name="print" slot="start"></ion-icon>
+                        Print Report
+                    </ion-button>
+                </div>
+                <div class="summary-text">
+                    <ion-text color="medium">
+                        <strong>{{filtered.length}}</strong> records match your criteria
+                    </ion-text>
+                </div>
+            </div>
+
             <!-- Enhanced Pagination -->
             <div class="pagination-container" *ngIf="totalPages > 1">
                 <div class="pagination-info">
-                    Showing {{(currentPage-1)*pageSize + 1}} to {{Math.min(currentPage*pageSize, filtered.length)}} of {{filtered.length}} records
+                    Showing {{(currentPage-1)*pageSize + 1}} to {{Math.min(currentPage*pageSize, filtered.length)}} of
+                    {{filtered.length}} records
                 </div>
                 <div class="pagination-controls">
                     <ion-button fill="clear" (click)="changePage(1)" [disabled]="currentPage === 1">
@@ -286,18 +324,16 @@
                     <ion-button fill="clear" (click)="changePage(currentPage-1)" [disabled]="currentPage === 1">
                         <ion-icon name="chevron-back-outline"></ion-icon>
                     </ion-button>
-                    
+
                     <div class="page-numbers">
-                        <ion-button 
-                            *ngFor="let page of getPageNumbers()" 
-                            fill="clear"
-                            [color]="page === currentPage ? 'primary' : 'medium'"
-                            (click)="changePage(page)">
+                        <ion-button *ngFor="let page of getPageNumbers()" fill="clear"
+                            [color]="page === currentPage ? 'primary' : 'medium'" (click)="changePage(page)">
                             {{page}}
                         </ion-button>
                     </div>
-                    
-                    <ion-button fill="clear" (click)="changePage(currentPage+1)" [disabled]="currentPage === totalPages">
+
+                    <ion-button fill="clear" (click)="changePage(currentPage+1)"
+                        [disabled]="currentPage === totalPages">
                         <ion-icon name="chevron-forward-outline"></ion-icon>
                     </ion-button>
                     <ion-button fill="clear" (click)="changePage(totalPages)" [disabled]="currentPage === totalPages">
