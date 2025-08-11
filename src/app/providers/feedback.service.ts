@@ -61,6 +61,21 @@ export class FeedbackService {
     return [...this.submissions];
   }
 
+  // Clear local cache and force fresh fetch
+  clearCache() {
+    console.log("Clearing feedback cache");
+    this.submissions = [];
+    localStorage.removeItem(this.localKey);
+  }
+
+  // Force refresh from server (clears cache first)
+  async forceRefresh(): Promise<FeedbackSubmission[]> {
+    this.clearCache();
+    const serverData = await this.fetchFromServer();
+    this.mergeRemote(serverData);
+    return this.getAll();
+  }
+
   private getApiBase(): string {
     const isLocal =
       window.location.protocol === "file:" ||
@@ -72,13 +87,28 @@ export class FeedbackService {
   // Fetch list from backend (read-only). No POST here.
   async fetchFromServer(): Promise<FeedbackSubmission[]> {
     const API_BASE = this.getApiBase();
+    console.log("Fetching from server:", `${API_BASE}/api/feedback`);
+
     try {
       const res = await fetch(`${API_BASE}/api/feedback`, {
-        headers: { Accept: "application/json" },
+        headers: {
+          Accept: "application/json",
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
       });
+
       if (!res.ok) throw new Error(`GET /api/feedback ${res.status}`);
+
       const data = await res.json();
+      console.log("Server response:", {
+        count: data?.length,
+        sample: data?.[0],
+      });
+
       if (!Array.isArray(data)) return [];
+
       // Normalize minimal fields (defensive)
       return data.map((d: any) => ({
         id: d.id || d._id,
@@ -101,22 +131,27 @@ export class FeedbackService {
         network: d.network,
       }));
     } catch (e) {
-      console.warn("Failed to fetch feedback list", e);
-      return [];
+      console.error("Failed to fetch feedback list:", e);
+      throw e; // Re-throw to let caller handle the error
     }
   }
 
   mergeRemote(list: FeedbackSubmission[]) {
-    if (!list.length) return;
-    const existingIds = new Set(
-      this.submissions.map((s) => s.id || s.timestamp + s.sessionId)
-    );
-    const toAdd = list.filter(
-      (r) => !existingIds.has(r.id || r.timestamp + r.sessionId)
-    );
-    if (toAdd.length) {
-      this.submissions = [...toAdd, ...this.submissions];
+    console.log("Merging remote data:", {
+      remoteCount: list.length,
+      localCount: this.submissions.length,
+    });
+
+    // Instead of merging, completely replace with server data
+    // This ensures deletions and updates from server are reflected
+    if (list.length >= 0) {
+      // Even if empty array, trust the server
+      this.submissions = [...list];
       this.persist();
+      console.log(
+        "Replaced local cache with server data:",
+        this.submissions.length
+      );
     }
   }
 

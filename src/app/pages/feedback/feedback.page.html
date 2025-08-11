@@ -5,11 +5,12 @@
             Feedback Dashboard
         </ion-title>
         <ion-buttons slot="end">
-            <ion-button fill="clear" (click)="refresh()">
+            <ion-button fill="clear" (click)="refresh()" [disabled]="loading">
                 <ion-icon name="refresh-circle" slot="icon-only"></ion-icon>
             </ion-button>
-            <ion-button fill="clear" (click)="refresh()">
-                <ion-icon name="reload" slot="icon-only"></ion-icon>
+            <ion-button fill="clear" (click)="forceRefresh()" [disabled]="loading"
+                title="Force refresh from server (clears cache)">
+                <ion-icon name="cloud-download" slot="icon-only"></ion-icon>
             </ion-button>
         </ion-buttons>
     </ion-toolbar>

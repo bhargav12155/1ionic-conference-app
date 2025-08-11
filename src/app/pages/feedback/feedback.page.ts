@@ -71,6 +71,32 @@ export class FeedbackPage implements OnInit, OnDestroy {
     }
   }
 
+  // Force refresh by clearing cache first
+  async forceRefresh() {
+    this.loading = true;
+    this.status = "Force refreshing from server...";
+
+    try {
+      this.submissions = await this.feedbackService.forceRefresh();
+
+      // Update status with clear distinction between total and filtered
+      const totalRecords = this.submissions.length;
+      const filteredCount = this.filtered.length;
+
+      if (filteredCount === totalRecords) {
+        this.status = `Force refreshed ${totalRecords} records from server`;
+      } else {
+        this.status = `Force refreshed ${totalRecords} total records • Showing ${filteredCount} matching your filters`;
+      }
+    } catch (error) {
+      this.status = "Failed to force refresh from server";
+      console.error("Force refresh failed:", error);
+    } finally {
+      this.loading = false;
+      setTimeout(() => this.updateStatusForFilters(), 100);
+    }
+  }
+
   // Analytics getters
   get positiveCount(): number {
     return this.filtered.filter(
