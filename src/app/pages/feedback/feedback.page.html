@@ -95,7 +95,8 @@
                 <div class="filter-group">
                     <ion-item lines="none">
                         <ion-label>Time Period</ion-label>
-                        <ion-select interface="popover" [(ngModel)]="timeFilter" (ionChange)="currentPage=1"
+                        <ion-select interface="popover" [(ngModel)]="timeFilter"
+                            (ionChange)="currentPage=1; updateStatusForFilters()"
                             [disabled]="startDateTime || endDateTime">
                             <ion-select-option value="all">All Time</ion-select-option>
                             <ion-select-option value="24h">Last 24h</ion-select-option>
@@ -130,7 +131,8 @@
                 <div class="filter-group">
                     <ion-item lines="none">
                         <ion-label>Referral Filter</ion-label>
-                        <ion-select interface="popover" [(ngModel)]="referralFilter" (ionChange)="currentPage=1">
+                        <ion-select interface="popover" [(ngModel)]="referralFilter"
+                            (ionChange)="currentPage=1; updateStatusForFilters()">
                             <ion-select-option value="all">All Referrals</ion-select-option>
                             <ion-select-option value="Yes">Yes</ion-select-option>
                             <ion-select-option value="No">No</ion-select-option>
@@ -141,6 +143,11 @@
             </div>
 
             <div class="action-buttons">
+                <ion-button fill="clear" color="danger" (click)="clearAllFilters()" *ngIf="hasActiveFilters()"
+                    style="margin-right: 16px;">
+                    <ion-icon name="close-circle" slot="start"></ion-icon>
+                    Clear All Filters
+                </ion-button>
                 <ion-button fill="outline" (click)="exportCSV()" [disabled]="!filtered.length">
                     <ion-icon name="download-outline" slot="start"></ion-icon>
                     Export CSV
@@ -175,8 +182,15 @@
             <ion-card-title>
                 <ion-icon name="library"></ion-icon>
                 Feedback Database
-                <span class="record-count">{{filtered.length}} entries</span>
+                <ion-icon name="funnel" *ngIf="hasActiveFilters()"
+                    style="color: #667eea; margin-left: 8px; font-size: 0.8em;"></ion-icon>
+                <span class="record-count">{{filtered.length}} of {{submissions.length}} records</span>
             </ion-card-title>
+            <ion-card-subtitle *ngIf="submissions.length !== filtered.length"
+                style="color: #667eea; font-weight: 500; margin-top: 8px;">
+                <ion-icon name="funnel" style="margin-right: 8px;"></ion-icon>
+                Filters applied - showing {{((filtered.length / submissions.length) * 100).toFixed(1)}}% of total data
+            </ion-card-subtitle>
         </ion-card-header>
         <ion-card-content>
             <div class="table-container">
@@ -294,18 +308,21 @@
             <!-- Professional Action Bar -->
             <div class="action-bar" *ngIf="filtered.length > 0">
                 <div class="export-section">
-                    <ion-button fill="solid" color="success" (click)="exportToCSV()" class="export-btn">
+                    <ion-button fill="solid" color="success" (click)="exportCSV()" class="export-btn">
                         <ion-icon name="download" slot="start"></ion-icon>
                         Export CSV
                     </ion-button>
-                    <ion-button fill="outline" color="primary" (click)="printTable()" class="print-btn">
+                    <ion-button fill="outline" color="primary" (click)="exportPrint()" class="print-btn">
                         <ion-icon name="print" slot="start"></ion-icon>
                         Print Report
                     </ion-button>
                 </div>
                 <div class="summary-text">
                     <ion-text color="medium">
-                        <strong>{{filtered.length}}</strong> records match your criteria
+                        <strong>{{filtered.length}}</strong> of <strong>{{submissions.length}}</strong> records shown
+                        <span *ngIf="submissions.length !== filtered.length" style="color: #667eea; margin-left: 8px;">
+                            ({{((filtered.length / submissions.length) * 100).toFixed(1)}}% filtered)
+                        </span>
                     </ion-text>
                 </div>
             </div>

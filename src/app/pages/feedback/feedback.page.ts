@@ -45,11 +45,29 @@ export class FeedbackPage implements OnInit, OnDestroy {
       const remote = await this.feedbackService.fetchFromServer();
       this.feedbackService.mergeRemote(remote);
       this.submissions = this.feedbackService.getAll();
-      this.status = `Successfully loaded ${this.submissions.length} records`;
+
+      // Update status with clear distinction between total and filtered
+      const totalRecords = this.submissions.length;
+      const filteredCount = this.filtered.length;
+
+      if (filteredCount === totalRecords) {
+        this.status = `Successfully loaded ${totalRecords} records`;
+      } else {
+        this.status = `Loaded ${totalRecords} total records • Showing ${filteredCount} matching your filters`;
+      }
     } catch (error) {
-      this.status = "Failed to sync data. Showing cached results.";
+      const cachedCount = this.submissions.length;
+      const filteredCount = this.filtered.length;
+
+      if (filteredCount === cachedCount) {
+        this.status = `Failed to sync. Showing ${cachedCount} cached records`;
+      } else {
+        this.status = `Failed to sync. Showing ${filteredCount} of ${cachedCount} cached records`;
+      }
     } finally {
       this.loading = false;
+      // Update status to reflect current filter state
+      setTimeout(() => this.updateStatusForFilters(), 100);
     }
   }
 
@@ -68,9 +86,23 @@ export class FeedbackPage implements OnInit, OnDestroy {
   }
 
   // UI Helper methods
+  updateStatusForFilters() {
+    if (!this.submissions.length) return;
+
+    const totalRecords = this.submissions.length;
+    const filteredCount = this.filtered.length;
+
+    if (filteredCount === totalRecords) {
+      this.status = `Showing all ${totalRecords} records`;
+    } else {
+      this.status = `Loaded ${totalRecords} total records • Showing ${filteredCount} matching your filters`;
+    }
+  }
+
   onSearchChange(event: any) {
     this.search = event.detail.value;
     this.currentPage = 1;
+    this.updateStatusForFilters();
   }
 
   onDateRangeChange() {
@@ -87,6 +119,28 @@ export class FeedbackPage implements OnInit, OnDestroy {
       }
     }
     this.currentPage = 1;
+    this.updateStatusForFilters();
+  }
+
+  // Check if any filters are active
+  hasActiveFilters(): boolean {
+    return (
+      this.search.trim() !== "" ||
+      this.timeFilter !== "all" ||
+      this.referralFilter !== "all" ||
+      this.hasCustomRange()
+    );
+  }
+
+  // Clear all filters
+  clearAllFilters() {
+    this.search = "";
+    this.timeFilter = "all";
+    this.referralFilter = "all";
+    this.startDateTime = null;
+    this.endDateTime = null;
+    this.currentPage = 1;
+    this.updateStatusForFilters();
   }
 
   // Check if date range is valid
