@@ -20,7 +20,7 @@ var _DigitalFeedbackPageRoutingModule;
 
 
 const routes = [{
-  path: '',
+  path: "",
   component: _digital_feedback_page__WEBPACK_IMPORTED_MODULE_0__.DigitalFeedbackPage
 }];
 class DigitalFeedbackPageRoutingModule {}
@@ -200,7 +200,7 @@ function DigitalFeedbackPage_div_18_Template(rf, ctx) {
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtwoWayListener"]("ngModelChange", function DigitalFeedbackPage_div_18_Template_ion_searchbar_ngModelChange_1_listener($event) {
       _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵrestoreView"](_r3);
       const ctx_r1 = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵnextContext"]();
-      _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtwoWayBindingSet"](ctx_r1.searchTerm, $event) || (ctx_r1.searchTerm = $event);
+      _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtwoWayBindingSet"](ctx_r1.search, $event) || (ctx_r1.search = $event);
       return _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵresetView"]($event);
     });
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("ionInput", function DigitalFeedbackPage_div_18_Template_ion_searchbar_ionInput_1_listener($event) {
@@ -213,7 +213,7 @@ function DigitalFeedbackPage_div_18_Template(rf, ctx) {
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("click", function DigitalFeedbackPage_div_18_Template_ion_chip_click_3_listener() {
       _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵrestoreView"](_r3);
       const ctx_r1 = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵnextContext"]();
-      return _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵresetView"](ctx_r1.toggleRatingFilter("excellent"));
+      return _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵresetView"](ctx_r1.toggleExperienceFilter("excellent"));
     });
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](4, "ion-icon", 35);
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](5, "ion-label");
@@ -223,7 +223,7 @@ function DigitalFeedbackPage_div_18_Template(rf, ctx) {
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("click", function DigitalFeedbackPage_div_18_Template_ion_chip_click_7_listener() {
       _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵrestoreView"](_r3);
       const ctx_r1 = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵnextContext"]();
-      return _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵresetView"](ctx_r1.toggleRatingFilter("good"));
+      return _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵresetView"](ctx_r1.toggleExperienceFilter("good"));
     });
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](8, "ion-icon", 36);
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](9, "ion-label");
@@ -233,7 +233,7 @@ function DigitalFeedbackPage_div_18_Template(rf, ctx) {
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("click", function DigitalFeedbackPage_div_18_Template_ion_chip_click_11_listener() {
       _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵrestoreView"](_r3);
       const ctx_r1 = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵnextContext"]();
-      return _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵresetView"](ctx_r1.toggleRatingFilter("average"));
+      return _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵresetView"](ctx_r1.toggleExperienceFilter("average"));
     });
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](12, "ion-icon", 37);
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](13, "ion-label");
@@ -243,7 +243,7 @@ function DigitalFeedbackPage_div_18_Template(rf, ctx) {
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("click", function DigitalFeedbackPage_div_18_Template_ion_chip_click_15_listener() {
       _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵrestoreView"](_r3);
       const ctx_r1 = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵnextContext"]();
-      return _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵresetView"](ctx_r1.toggleRatingFilter("poor"));
+      return _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵresetView"](ctx_r1.toggleExperienceFilter("poor"));
     });
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](16, "ion-icon", 38);
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](17, "ion-label");
@@ -290,15 +290,15 @@ function DigitalFeedbackPage_div_18_Template(rf, ctx) {
   if (rf & 2) {
     const ctx_r1 = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵnextContext"]();
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"]();
-    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtwoWayProperty"]("ngModel", ctx_r1.searchTerm);
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtwoWayProperty"]("ngModel", ctx_r1.search);
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](2);
-    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("color", ctx_r1.ratingFilter === "excellent" ? "success" : "medium");
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("color", ctx_r1.experienceFilter === "excellent" ? "success" : "medium");
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](4);
-    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("color", ctx_r1.ratingFilter === "good" ? "primary" : "medium");
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("color", ctx_r1.experienceFilter === "good" ? "primary" : "medium");
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](4);
-    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("color", ctx_r1.ratingFilter === "average" ? "warning" : "medium");
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("color", ctx_r1.experienceFilter === "average" ? "warning" : "medium");
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](4);
-    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("color", ctx_r1.ratingFilter === "poor" ? "danger" : "medium");
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("color", ctx_r1.experienceFilter === "poor" ? "danger" : "medium");
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](5);
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtwoWayProperty"]("ngModel", ctx_r1.sortBy);
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](10);
@@ -341,9 +341,9 @@ function DigitalFeedbackPage_div_19_div_5_Template(rf, ctx) {
   if (rf & 2) {
     const ctx_r1 = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵnextContext"](2);
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](4);
-    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("ngIf", ctx_r1.hasSelectedFilter);
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("ngIf", ctx_r1.hasActiveFilters());
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"]();
-    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("ngIf", !ctx_r1.hasSelectedFilter);
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("ngIf", !ctx_r1.hasActiveFilters());
   }
 }
 function DigitalFeedbackPage_div_19_div_6_ion_card_1_p_8_Template(rf, ctx) {
@@ -695,7 +695,7 @@ function DigitalFeedbackPage_div_19_Template(rf, ctx) {
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](3);
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtextInterpolate2"](" Showing ", ctx_r1.displayedSubmissions.length, " of ", ctx_r1.totalSubmissions, " submissions ");
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"]();
-    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("ngIf", ctx_r1.hasSelectedFilter);
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("ngIf", ctx_r1.hasActiveFilters());
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"]();
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("ngIf", ctx_r1.displayedSubmissions.length === 0);
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"]();
@@ -708,19 +708,21 @@ class DigitalFeedbackPage {
   constructor(digitalFeedbackService) {
     this.digitalFeedbackService = digitalFeedbackService;
     this.submissions = [];
-    this.search = '';
-    this.sortColumn = 'timestamp';
-    this.sortDirection = 'desc';
+    this.search = "";
+    this.sortColumn = "timestamp";
+    this.sortDirection = "desc";
     this.pageSize = 10;
     this.currentPage = 1;
-    this.timeFilter = 'all';
-    this.experienceFilter = 'all';
+    this.timeFilter = "all";
+    this.experienceFilter = "all";
     this.startDateTime = null;
     this.endDateTime = null;
-    this.status = '';
+    this.status = "";
     this.loading = false;
     this.Math = Math; // Make Math available in template
     this.errorMessage = null;
+    // Card expansion management
+    this.expandedCards = new Set();
   }
   ngOnInit() {
     this.refresh();
@@ -733,7 +735,7 @@ class DigitalFeedbackPage {
     var _this = this;
     return (0,_Users_ananya_Documents_bhargav_1ionic_conference_app_node_modules_babel_runtime_helpers_esm_asyncToGenerator_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function* () {
       _this.loading = showLoading;
-      if (showLoading) _this.status = 'Loading digital feedback data...';else _this.status = 'Syncing latest data...';
+      if (showLoading) _this.status = "Loading digital feedback data...";else _this.status = "Syncing latest data...";
       try {
         const remote = yield _this.digitalFeedbackService.fetchFromServer();
         _this.digitalFeedbackService.mergeRemote(remote);
@@ -749,7 +751,7 @@ class DigitalFeedbackPage {
       } catch (error) {
         const cachedCount = _this.submissions.length;
         const filteredCount = _this.filtered.length;
-        _this.errorMessage = error instanceof Error ? error.message : 'Failed to load data';
+        _this.errorMessage = error instanceof Error ? error.message : "Failed to load data";
         if (filteredCount === cachedCount) {
           _this.status = `Failed to sync. Showing ${cachedCount} cached records`;
         } else {
@@ -766,7 +768,7 @@ class DigitalFeedbackPage {
     var _this2 = this;
     return (0,_Users_ananya_Documents_bhargav_1ionic_conference_app_node_modules_babel_runtime_helpers_esm_asyncToGenerator_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function* () {
       _this2.loading = true;
-      _this2.status = 'Force refreshing from server...';
+      _this2.status = "Force refreshing from server...";
       try {
         _this2.submissions = yield _this2.digitalFeedbackService.forceRefresh();
         const totalRecords = _this2.submissions.length;
@@ -777,8 +779,8 @@ class DigitalFeedbackPage {
           _this2.status = `Force refreshed ${totalRecords} total records • Showing ${filteredCount} matching your filters`;
         }
       } catch (error) {
-        _this2.status = 'Failed to force refresh from server';
-        console.error('Force refresh failed:', error);
+        _this2.status = "Failed to force refresh from server";
+        console.error("Force refresh failed:", error);
       } finally {
         _this2.loading = false;
         setTimeout(() => _this2.updateStatusForFilters(), 100);
@@ -793,11 +795,18 @@ class DigitalFeedbackPage {
       event.target.complete();
     })();
   }
+  // Handle manual refresh button clicks
+  doRefresh() {
+    var _this4 = this;
+    return (0,_Users_ananya_Documents_bhargav_1ionic_conference_app_node_modules_babel_runtime_helpers_esm_asyncToGenerator_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function* () {
+      yield _this4.forceRefresh();
+    })();
+  }
   // Analytics getters
   get excellentCount() {
     return this.filtered.filter(f => {
       var _f$digitalFeedback;
-      return ((_f$digitalFeedback = f.digitalFeedback) === null || _f$digitalFeedback === void 0 ? void 0 : _f$digitalFeedback.overallExperience) === 'excellent';
+      return ((_f$digitalFeedback = f.digitalFeedback) === null || _f$digitalFeedback === void 0 ? void 0 : _f$digitalFeedback.overallExperience) === "excellent";
     }).length;
   }
   get todayCount() {
@@ -807,6 +816,131 @@ class DigitalFeedbackPage {
   // Check if any filters are active
   get hasSelectedFilter() {
     return this.search.trim() !== '' || this.timeFilter !== 'all' || this.experienceFilter !== 'all' || this.startDateTime !== null || this.endDateTime !== null;
+  }
+  // Analytics getters
+  get totalSubmissions() {
+    return this.submissions.length;
+  }
+  get thisMonthCount() {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    return this.submissions.filter(s => new Date(s.timestamp) >= startOfMonth).length;
+  }
+  get averageRating() {
+    const ratings = this.submissions.map(s => {
+      var _s$digitalFeedback;
+      return (_s$digitalFeedback = s.digitalFeedback) === null || _s$digitalFeedback === void 0 ? void 0 : _s$digitalFeedback.overallExperience;
+    }).filter(r => r && r !== '');
+    if (ratings.length === 0) return 'N/A';
+    // Map ratings to numbers for calculation
+    const ratingValues = {
+      'excellent': 5,
+      'good': 4,
+      'average': 3,
+      'poor': 2,
+      'very poor': 1
+    };
+    const values = ratings.map(r => ratingValues[r === null || r === void 0 ? void 0 : r.toLowerCase()] || 3);
+    const avg = values.reduce((a, b) => a + b, 0) / values.length;
+    return avg.toFixed(1);
+  }
+  get uniqueEmailsCount() {
+    const emails = this.submissions.map(s => {
+      var _s$contact;
+      return (_s$contact = s.contact) === null || _s$contact === void 0 ? void 0 : _s$contact.email;
+    }).filter(email => email && email.trim() !== '');
+    return new Set(emails).size;
+  }
+  get displayedSubmissions() {
+    return this.filtered;
+  }
+  get paginatedSubmissions() {
+    return this.paginated;
+  }
+  // Helper methods for template
+  trackBySubmission(index, submission) {
+    return submission.id || submission.sessionId || index.toString();
+  }
+  getRatingColor(rating) {
+    if (!rating) return 'medium';
+    switch (rating.toLowerCase()) {
+      case 'excellent':
+        return 'success';
+      case 'good':
+        return 'primary';
+      case 'average':
+        return 'warning';
+      case 'poor':
+      case 'very poor':
+        return 'danger';
+      default:
+        return 'medium';
+    }
+  }
+  toggleCard(submission) {
+    const id = submission.id || submission.sessionId;
+    if (this.expandedCards.has(id)) {
+      this.expandedCards.delete(id);
+    } else {
+      this.expandedCards.add(id);
+    }
+  }
+  // Data formatting helpers
+  getDeviceInfo(device) {
+    if (!device) return 'N/A';
+    const parts = [];
+    if (device.platform) parts.push(device.platform);
+    if (device.userAgent) {
+      const match = device.userAgent.match(/\([^)]+\)/);
+      if (match) parts.push(match[0]);
+    }
+    return parts.length > 0 ? parts.join(' ') : 'N/A';
+  }
+  getNetworkInfo(network) {
+    var _network$geo, _network$geo2;
+    if (!network) return 'N/A';
+    const parts = [];
+    if (network.ip) parts.push(`IP: ${network.ip}`);
+    if ((_network$geo = network.geo) !== null && _network$geo !== void 0 && _network$geo.country) parts.push(`Country: ${network.geo.country}`);
+    if ((_network$geo2 = network.geo) !== null && _network$geo2 !== void 0 && _network$geo2.city) parts.push(`City: ${network.geo.city}`);
+    return parts.length > 0 ? parts.join(', ') : 'N/A';
+  }
+  getLocationInfo(location) {
+    var _location$coordinates, _location$coordinates2;
+    if (!location) return 'N/A';
+    const parts = [];
+    if ((_location$coordinates = location.coordinates) !== null && _location$coordinates !== void 0 && _location$coordinates.latitude && (_location$coordinates2 = location.coordinates) !== null && _location$coordinates2 !== void 0 && _location$coordinates2.longitude) {
+      parts.push(`${location.coordinates.latitude.toFixed(4)}, ${location.coordinates.longitude.toFixed(4)}`);
+    }
+    if (location.timezone) parts.push(`TZ: ${location.timezone}`);
+    return parts.length > 0 ? parts.join(', ') : 'N/A';
+  }
+  // Search and filter methods
+  handleSearch(event) {
+    this.search = event.detail.value || '';
+    this.currentPage = 1; // Reset to first page when searching
+  }
+  toggleExperienceFilter(experience) {
+    if (this.experienceFilter === experience) {
+      this.experienceFilter = 'all';
+    } else {
+      this.experienceFilter = experience;
+    }
+    this.currentPage = 1; // Reset to first page when filtering
+  }
+  onPageSizeChange() {
+    this.currentPage = 1; // Reset to first page when changing page size
+  }
+  // Pagination methods (using existing totalPages getter)
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+    }
+  }
+  previousPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+    }
   }
   // UI Helper methods
   updateStatusForFilters() {
@@ -839,13 +973,13 @@ class DigitalFeedbackPage {
   }
   // Check if any filters are active
   hasActiveFilters() {
-    return this.search.trim() !== '' || this.timeFilter !== 'all' || this.experienceFilter !== 'all' || this.hasCustomRange();
+    return this.search.trim() !== "" || this.timeFilter !== "all" || this.experienceFilter !== "all" || this.hasCustomRange();
   }
   // Clear all filters
   clearAllFilters() {
-    this.search = '';
-    this.timeFilter = 'all';
-    this.experienceFilter = 'all';
+    this.search = "";
+    this.timeFilter = "all";
+    this.experienceFilter = "all";
     this.startDateTime = null;
     this.endDateTime = null;
     this.currentPage = 1;
@@ -859,15 +993,15 @@ class DigitalFeedbackPage {
   // Get current filter info for display
   get filterInfo() {
     if (this.hasCustomRange()) {
-      const start = this.startDateTime ? new Date(this.startDateTime).toLocaleString() : 'Start';
-      const end = this.endDateTime ? new Date(this.endDateTime).toLocaleString() : 'End';
-      const valid = this.isDateRangeValid ? '' : ' (Invalid Range - Auto-corrected)';
+      const start = this.startDateTime ? new Date(this.startDateTime).toLocaleString() : "Start";
+      const end = this.endDateTime ? new Date(this.endDateTime).toLocaleString() : "End";
+      const valid = this.isDateRangeValid ? "" : " (Invalid Range - Auto-corrected)";
       return `Custom range: ${start} to ${end}${valid}`;
     }
-    if (this.timeFilter !== 'all') {
-      return `Showing: ${this.timeFilter.replace('h', ' hours').replace('d', ' days')}`;
+    if (this.timeFilter !== "all") {
+      return `Showing: ${this.timeFilter.replace("h", " hours").replace("d", " days")}`;
     }
-    return 'Showing: All records';
+    return "Showing: All records";
   }
   hasCustomRange() {
     return !!(this.startDateTime || this.endDateTime);
@@ -885,18 +1019,18 @@ class DigitalFeedbackPage {
       });
     }
     // Experience filter
-    if (this.experienceFilter !== 'all') {
+    if (this.experienceFilter !== "all") {
       data = data.filter(d => {
         var _d$digitalFeedback6;
         return ((_d$digitalFeedback6 = d.digitalFeedback) === null || _d$digitalFeedback6 === void 0 ? void 0 : _d$digitalFeedback6.overallExperience) === this.experienceFilter;
       });
     }
     // Relative time filter only if no custom range
-    if (!this.hasCustomRange() && this.timeFilter !== 'all') {
+    if (!this.hasCustomRange() && this.timeFilter !== "all") {
       const cutoffMap = {
-        '24h': 24 * 3600 * 1000,
-        '7d': 7 * 24 * 3600 * 1000,
-        '30d': 30 * 24 * 3600 * 1000
+        "24h": 24 * 3600 * 1000,
+        "7d": 7 * 24 * 3600 * 1000,
+        "30d": 30 * 24 * 3600 * 1000
       };
       const cutoff = now - cutoffMap[this.timeFilter];
       data = data.filter(d => new Date(d.timestamp).getTime() >= cutoff);
@@ -916,22 +1050,22 @@ class DigitalFeedbackPage {
     // Sort
     data.sort((a, b) => {
       let aVal, bVal;
-      if (this.sortColumn === 'timestamp') {
+      if (this.sortColumn === "timestamp") {
         aVal = new Date(a.timestamp).getTime();
         bVal = new Date(b.timestamp).getTime();
-      } else if (this.sortColumn === 'contact.name') {
+      } else if (this.sortColumn === "contact.name") {
         var _a$contact, _b$contact;
-        aVal = ((_a$contact = a.contact) === null || _a$contact === void 0 ? void 0 : _a$contact.name) || '';
-        bVal = ((_b$contact = b.contact) === null || _b$contact === void 0 ? void 0 : _b$contact.name) || '';
-      } else if (this.sortColumn === 'digitalFeedback.overallExperience') {
+        aVal = ((_a$contact = a.contact) === null || _a$contact === void 0 ? void 0 : _a$contact.name) || "";
+        bVal = ((_b$contact = b.contact) === null || _b$contact === void 0 ? void 0 : _b$contact.name) || "";
+      } else if (this.sortColumn === "digitalFeedback.overallExperience") {
         var _a$digitalFeedback, _b$digitalFeedback;
-        aVal = ((_a$digitalFeedback = a.digitalFeedback) === null || _a$digitalFeedback === void 0 ? void 0 : _a$digitalFeedback.overallExperience) || '';
-        bVal = ((_b$digitalFeedback = b.digitalFeedback) === null || _b$digitalFeedback === void 0 ? void 0 : _b$digitalFeedback.overallExperience) || '';
+        aVal = ((_a$digitalFeedback = a.digitalFeedback) === null || _a$digitalFeedback === void 0 ? void 0 : _a$digitalFeedback.overallExperience) || "";
+        bVal = ((_b$digitalFeedback = b.digitalFeedback) === null || _b$digitalFeedback === void 0 ? void 0 : _b$digitalFeedback.overallExperience) || "";
       } else {
         return 0;
       }
-      if (aVal < bVal) return this.sortDirection === 'asc' ? -1 : 1;
-      if (aVal > bVal) return this.sortDirection === 'asc' ? 1 : -1;
+      if (aVal < bVal) return this.sortDirection === "asc" ? -1 : 1;
+      if (aVal > bVal) return this.sortDirection === "asc" ? 1 : -1;
       return 0;
     });
     return data;
@@ -945,10 +1079,10 @@ class DigitalFeedbackPage {
   }
   setSort(column) {
     if (this.sortColumn === column) {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+      this.sortDirection = this.sortDirection === "asc" ? "desc" : "asc";
     } else {
       this.sortColumn = column;
-      this.sortDirection = 'desc';
+      this.sortDirection = "desc";
     }
   }
   changePage(page) {
@@ -973,52 +1107,52 @@ class DigitalFeedbackPage {
     return new Date(timestamp).toLocaleTimeString();
   }
   getInitials(name) {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+    return name.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2);
   }
   getStatusColor() {
-    if (this.status.includes('Failed')) return 'danger';
-    if (this.status.includes('Force refreshed')) return 'success';
-    if (this.status.includes('Successfully')) return 'success';
-    return 'primary';
+    if (this.status.includes("Failed")) return "danger";
+    if (this.status.includes("Force refreshed")) return "success";
+    if (this.status.includes("Successfully")) return "success";
+    return "primary";
   }
   getStatusIcon() {
-    if (this.status.includes('Failed')) return 'warning';
-    if (this.status.includes('Force refreshed')) return 'checkmark-circle';
-    if (this.status.includes('Successfully')) return 'checkmark-circle';
-    return 'information-circle';
+    if (this.status.includes("Failed")) return "warning";
+    if (this.status.includes("Force refreshed")) return "checkmark-circle";
+    if (this.status.includes("Successfully")) return "checkmark-circle";
+    return "information-circle";
   }
   trackByFn(index, item) {
     return item.id || item.timestamp + item.sessionId;
   }
   // Export functions
   exportCSV() {
-    const headers = ['Date', 'Time', 'Name', 'Email', 'Phone', 'Overall Experience', 'Website/CRM Improvements', 'Likes/Dislikes', 'Priority Improvements', 'Additional Comments', 'Device Platform', 'IP Address', 'Location'];
+    const headers = ["Date", "Time", "Name", "Email", "Phone", "Overall Experience", "Website/CRM Improvements", "Likes/Dislikes", "Priority Improvements", "Additional Comments", "Device Platform", "IP Address", "Location"];
     const rows = [headers];
     this.filtered.forEach(r => {
       var _r$contact, _r$contact2, _r$contact3, _r$digitalFeedback, _r$digitalFeedback2, _r$digitalFeedback3, _r$digitalFeedback4, _r$digitalFeedback5, _r$device, _r$network, _r$location;
-      rows.push([this.formatDate(r.timestamp), this.formatTime(r.timestamp), ((_r$contact = r.contact) === null || _r$contact === void 0 ? void 0 : _r$contact.name) || '', ((_r$contact2 = r.contact) === null || _r$contact2 === void 0 ? void 0 : _r$contact2.email) || '', ((_r$contact3 = r.contact) === null || _r$contact3 === void 0 ? void 0 : _r$contact3.phone) || '', ((_r$digitalFeedback = r.digitalFeedback) === null || _r$digitalFeedback === void 0 ? void 0 : _r$digitalFeedback.overallExperience) || '', ((_r$digitalFeedback2 = r.digitalFeedback) === null || _r$digitalFeedback2 === void 0 ? void 0 : _r$digitalFeedback2.websiteCrmImprovements) || '', ((_r$digitalFeedback3 = r.digitalFeedback) === null || _r$digitalFeedback3 === void 0 ? void 0 : _r$digitalFeedback3.likesDislikesDigital) || '', ((_r$digitalFeedback4 = r.digitalFeedback) === null || _r$digitalFeedback4 === void 0 ? void 0 : _r$digitalFeedback4.priorityImprovements) || '', ((_r$digitalFeedback5 = r.digitalFeedback) === null || _r$digitalFeedback5 === void 0 ? void 0 : _r$digitalFeedback5.additionalComments) || '', ((_r$device = r.device) === null || _r$device === void 0 ? void 0 : _r$device.platform) || '', ((_r$network = r.network) === null || _r$network === void 0 ? void 0 : _r$network.ip) || '', (_r$location = r.location) !== null && _r$location !== void 0 && _r$location.coordinates ? `${r.location.coordinates.latitude}, ${r.location.coordinates.longitude}` : '']);
+      rows.push([this.formatDate(r.timestamp), this.formatTime(r.timestamp), ((_r$contact = r.contact) === null || _r$contact === void 0 ? void 0 : _r$contact.name) || "", ((_r$contact2 = r.contact) === null || _r$contact2 === void 0 ? void 0 : _r$contact2.email) || "", ((_r$contact3 = r.contact) === null || _r$contact3 === void 0 ? void 0 : _r$contact3.phone) || "", ((_r$digitalFeedback = r.digitalFeedback) === null || _r$digitalFeedback === void 0 ? void 0 : _r$digitalFeedback.overallExperience) || "", ((_r$digitalFeedback2 = r.digitalFeedback) === null || _r$digitalFeedback2 === void 0 ? void 0 : _r$digitalFeedback2.websiteCrmImprovements) || "", ((_r$digitalFeedback3 = r.digitalFeedback) === null || _r$digitalFeedback3 === void 0 ? void 0 : _r$digitalFeedback3.likesDislikesDigital) || "", ((_r$digitalFeedback4 = r.digitalFeedback) === null || _r$digitalFeedback4 === void 0 ? void 0 : _r$digitalFeedback4.priorityImprovements) || "", ((_r$digitalFeedback5 = r.digitalFeedback) === null || _r$digitalFeedback5 === void 0 ? void 0 : _r$digitalFeedback5.additionalComments) || "", ((_r$device = r.device) === null || _r$device === void 0 ? void 0 : _r$device.platform) || "", ((_r$network = r.network) === null || _r$network === void 0 ? void 0 : _r$network.ip) || "", (_r$location = r.location) !== null && _r$location !== void 0 && _r$location.coordinates ? `${r.location.coordinates.latitude}, ${r.location.coordinates.longitude}` : ""]);
     });
-    const csv = rows.map(r => r.map(c => '"' + c.replace(/"/g, '""') + '"').join(',')).join('\n');
+    const csv = rows.map(r => r.map(c => '"' + c.replace(/"/g, '""') + '"').join(",")).join("\n");
     const blob = new Blob([csv], {
-      type: 'text/csv;charset=utf-8;'
+      type: "text/csv;charset=utf-8;"
     });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = 'digital-feedback.csv';
+    a.download = "digital-feedback.csv";
     a.click();
     URL.revokeObjectURL(url);
   }
   exportPrint() {
     var _document$getElementB;
-    const printContents = ((_document$getElementB = document.getElementById('digitalFeedbackTable')) === null || _document$getElementB === void 0 ? void 0 : _document$getElementB.outerHTML) || '';
-    const w = window.open('', '', 'height=700,width=900');
+    const printContents = ((_document$getElementB = document.getElementById("digitalFeedbackTable")) === null || _document$getElementB === void 0 ? void 0 : _document$getElementB.outerHTML) || "";
+    const w = window.open("", "", "height=700,width=900");
     if (!w) return;
-    w.document.write('<html><head><title>Digital Feedback</title>');
-    w.document.write('<style>table{width:100%;border-collapse:collapse;}th,td{border:1px solid #ccc;padding:4px;font-size:12px;}th{background:#eee;}</style>');
-    w.document.write('</head><body>');
+    w.document.write("<html><head><title>Digital Feedback</title>");
+    w.document.write("<style>table{width:100%;border-collapse:collapse;}th,td{border:1px solid #ccc;padding:4px;font-size:12px;}th{background:#eee;}</style>");
+    w.document.write("</head><body>");
     w.document.write(printContents);
-    w.document.write('</body></html>');
+    w.document.write("</body></html>");
     w.document.close();
     w.print();
   }
@@ -1061,7 +1195,7 @@ _DigitalFeedbackPage.ɵcmp = /*@__PURE__*/_angular_core__WEBPACK_IMPORTED_MODULE
     if (rf & 2) {
       _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("translucent", true);
       _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](8);
-      _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("disabled", !ctx.hasSelectedFilter);
+      _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("disabled", !ctx.hasActiveFilters());
       _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](2);
       _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("fullscreen", true);
       _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](5);
@@ -1099,7 +1233,7 @@ var _DigitalFeedbackService;
 
 class DigitalFeedbackService {
   constructor() {
-    this.localKey = 'app_digital_feedback_submissions_v1';
+    this.localKey = "app_digital_feedback_submissions_v1";
     this.submissions = [];
     this.loadFromStorage();
   }
@@ -1108,14 +1242,14 @@ class DigitalFeedbackService {
       const raw = localStorage.getItem(this.localKey);
       if (raw) this.submissions = JSON.parse(raw);
     } catch (e) {
-      console.warn('Failed to load digital feedback from storage', e);
+      console.warn("Failed to load digital feedback from storage", e);
     }
   }
   persist() {
     try {
       localStorage.setItem(this.localKey, JSON.stringify(this.submissions));
     } catch (e) {
-      console.warn('Failed to persist digital feedback to storage', e);
+      console.warn("Failed to persist digital feedback to storage", e);
     }
   }
   getAll() {
@@ -1123,7 +1257,7 @@ class DigitalFeedbackService {
   }
   // Clear local cache and force fresh fetch
   clearCache() {
-    console.log('Clearing digital feedback cache');
+    console.log("Clearing digital feedback cache");
     this.submissions = [];
     localStorage.removeItem(this.localKey);
   }
@@ -1138,27 +1272,27 @@ class DigitalFeedbackService {
     })();
   }
   getApiBase() {
-    const isLocal = window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    return isLocal ? 'http://localhost:3000' : 'https://loc-end.onrender.com';
+    // Always use production API for digital feedback
+    return "https://loc-end.onrender.com";
   }
   // Fetch list from backend (read-only)
   fetchFromServer() {
     var _this2 = this;
     return (0,_Users_ananya_Documents_bhargav_1ionic_conference_app_node_modules_babel_runtime_helpers_esm_asyncToGenerator_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function* () {
       const API_BASE = _this2.getApiBase();
-      console.log('Fetching from server:', `${API_BASE}/api/digital-feedback`);
+      console.log("Fetching from server:", `${API_BASE}/api/digital-feedback`);
       try {
         const res = yield fetch(`${API_BASE}/api/digital-feedback`, {
           headers: {
-            Accept: 'application/json',
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0'
+            Accept: "application/json",
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            Pragma: "no-cache",
+            Expires: "0"
           }
         });
         if (!res.ok) throw new Error(`GET /api/digital-feedback ${res.status}`);
         const data = yield res.json();
-        console.log('Server response:', {
+        console.log("Server response:", {
           count: data === null || data === void 0 ? void 0 : data.length,
           sample: data === null || data === void 0 ? void 0 : data[0]
         });
@@ -1167,18 +1301,18 @@ class DigitalFeedbackService {
         return data.map(d => ({
           id: d.id || d._id,
           timestamp: d.timestamp || d.createdAt || new Date().toISOString(),
-          sessionId: d.sessionId || 'n/a',
+          sessionId: d.sessionId || "n/a",
           digitalFeedback: d.digitalFeedback || {
-            websiteCrmImprovements: d.websiteCrmImprovements || '',
-            likesDislikesDigital: d.likesDislikesDigital || '',
-            overallExperience: d.overallExperience || '',
-            priorityImprovements: d.priorityImprovements || '',
-            additionalComments: d.additionalComments || ''
+            websiteCrmImprovements: d.websiteCrmImprovements || "",
+            likesDislikesDigital: d.likesDislikesDigital || "",
+            overallExperience: d.overallExperience || "",
+            priorityImprovements: d.priorityImprovements || "",
+            additionalComments: d.additionalComments || ""
           },
           contact: d.contact || {
-            name: d.name || '',
-            email: d.email || '',
-            phone: d.phone || ''
+            name: d.name || "",
+            email: d.email || "",
+            phone: d.phone || ""
           },
           location: d.location,
           device: d.device,
@@ -1187,13 +1321,13 @@ class DigitalFeedbackService {
           appName: d.appName
         }));
       } catch (e) {
-        console.error('Failed to fetch digital feedback list:', e);
+        console.error("Failed to fetch digital feedback list:", e);
         throw e; // Re-throw to let caller handle the error
       }
     })();
   }
   mergeRemote(list) {
-    console.log('Merging remote data:', {
+    console.log("Merging remote data:", {
       remoteCount: list.length,
       localCount: this.submissions.length
     });
@@ -1203,7 +1337,7 @@ class DigitalFeedbackService {
       // Even if empty array, trust the server
       this.submissions = [...list];
       this.persist();
-      console.log('Replaced local cache with server data:', this.submissions.length);
+      console.log("Replaced local cache with server data:", this.submissions.length);
     }
   }
   // Retain submit method for future use
@@ -1212,10 +1346,10 @@ class DigitalFeedbackService {
     return (0,_Users_ananya_Documents_bhargav_1ionic_conference_app_node_modules_babel_runtime_helpers_esm_asyncToGenerator_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function* () {
       const API_BASE = _this3.getApiBase();
       const response = yield fetch(`${API_BASE}/api/digital-feedback`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json'
+          "Content-Type": "application/json",
+          Accept: "application/json"
         },
         body: JSON.stringify(feedback)
       });
@@ -1238,7 +1372,7 @@ _DigitalFeedbackService.ɵfac = function DigitalFeedbackService_Factory(t) {
 _DigitalFeedbackService.ɵprov = /*@__PURE__*/_angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineInjectable"]({
   token: _DigitalFeedbackService,
   factory: _DigitalFeedbackService.ɵfac,
-  providedIn: 'root'
+  providedIn: "root"
 });
 
 /***/ })
