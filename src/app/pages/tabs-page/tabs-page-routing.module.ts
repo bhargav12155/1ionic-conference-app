@@ -32,6 +32,13 @@ const routes: Routes = [
           ),
       },
       {
+        path: "digital-feedback",
+        loadChildren: () =>
+          import("../digital-feedback/digital-feedback.module").then(
+            (m) => m.DigitalFeedbackPageModule
+          ),
+      },
+      {
         path: "",
         redirectTo: "/app/tabs/map",
         pathMatch: "full",

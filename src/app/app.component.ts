@@ -32,6 +32,11 @@ export class AppComponent implements OnInit {
       url: "/app/tabs/feedback",
       icon: "chatbubbles",
     },
+    {
+      title: "Digital Feedback",
+      url: "/app/tabs/digital-feedback",
+      icon: "desktop",
+    },
   ];
   loggedIn = false; // No authentication system
   dark = false;
