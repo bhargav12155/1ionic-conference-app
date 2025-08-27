@@ -1146,9 +1146,9 @@ class DigitalFeedbackService {
     var _this2 = this;
     return (0,_Users_ananya_Documents_bhargav_1ionic_conference_app_node_modules_babel_runtime_helpers_esm_asyncToGenerator_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function* () {
       const API_BASE = _this2.getApiBase();
-      console.log('Fetching from server:', `${API_BASE}/api/digitalfeedback`);
+      console.log('Fetching from server:', `${API_BASE}/api/digital-feedback`);
       try {
-        const res = yield fetch(`${API_BASE}/api/digitalfeedback`, {
+        const res = yield fetch(`${API_BASE}/api/digital-feedback`, {
           headers: {
             Accept: 'application/json',
             'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -1156,7 +1156,7 @@ class DigitalFeedbackService {
             'Expires': '0'
           }
         });
-        if (!res.ok) throw new Error(`GET /api/digitalfeedback ${res.status}`);
+        if (!res.ok) throw new Error(`GET /api/digital-feedback ${res.status}`);
         const data = yield res.json();
         console.log('Server response:', {
           count: data === null || data === void 0 ? void 0 : data.length,
@@ -1211,7 +1211,7 @@ class DigitalFeedbackService {
     var _this3 = this;
     return (0,_Users_ananya_Documents_bhargav_1ionic_conference_app_node_modules_babel_runtime_helpers_esm_asyncToGenerator_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function* () {
       const API_BASE = _this3.getApiBase();
-      const response = yield fetch(`${API_BASE}/api/digitalfeedback`, {
+      const response = yield fetch(`${API_BASE}/api/digital-feedback`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
