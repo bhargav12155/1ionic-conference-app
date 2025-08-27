@@ -962,6 +962,9 @@ const routes = [{
     path: "feedback",
     loadChildren: () => __webpack_require__.e(/*! import() */ "src_app_pages_feedback_feedback_module_ts").then(__webpack_require__.bind(__webpack_require__, /*! ../feedback/feedback.module */ 9846)).then(m => m.FeedbackPageModule)
   }, {
+    path: "digital-feedback",
+    loadChildren: () => __webpack_require__.e(/*! import() */ "src_app_pages_digital-feedback_digital-feedback_module_ts").then(__webpack_require__.bind(__webpack_require__, /*! ../digital-feedback/digital-feedback.module */ 9776)).then(m => m.DigitalFeedbackPageModule)
+  }, {
     path: "",
     redirectTo: "/app/tabs/map",
     pathMatch: "full"
@@ -1055,9 +1058,9 @@ _TabsPage.ɵfac = function TabsPage_Factory(t) {
 _TabsPage.ɵcmp = /*@__PURE__*/_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineComponent"]({
   type: _TabsPage,
   selectors: [["ng-component"]],
-  decls: 18,
+  decls: 22,
   vars: 0,
-  consts: [["slot", "bottom"], ["tab", "users"], ["name", "people"], ["tab", "map"], ["name", "location"], ["tab", "activity-log"], ["name", "list"], ["tab", "feedback"], ["name", "chatbubbles"]],
+  consts: [["slot", "bottom"], ["tab", "users"], ["name", "people"], ["tab", "map"], ["name", "location"], ["tab", "activity-log"], ["name", "list"], ["tab", "feedback"], ["name", "chatbubbles"], ["tab", "digital-feedback"], ["name", "desktop"]],
   template: function TabsPage_Template(rf, ctx) {
     if (rf & 1) {
       _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](0, "ion-tabs")(1, "ion-tab-bar", 0)(2, "ion-tab-button", 1);
@@ -1079,6 +1082,11 @@ _TabsPage.ɵcmp = /*@__PURE__*/_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵd
       _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](15, "ion-icon", 8);
       _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](16, "ion-label");
       _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](17, "Feedback");
+      _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]()();
+      _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](18, "ion-tab-button", 9);
+      _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](19, "ion-icon", 10);
+      _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](20, "ion-label");
+      _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](21, "Digital");
       _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]()()()();
     }
   },

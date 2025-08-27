@@ -129,6 +129,10 @@ class AppComponent {
       title: "Feedback",
       url: "/app/tabs/feedback",
       icon: "chatbubbles"
+    }, {
+      title: "Digital Feedback",
+      url: "/app/tabs/digital-feedback",
+      icon: "desktop"
     }];
     this.loggedIn = false; // No authentication system
     this.dark = false;
