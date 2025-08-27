@@ -1,277 +1,273 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
-      <ion-back-button defaultHref="/"></ion-back-button>
-    </ion-buttons>
-    <ion-title>Digital Feedback</ion-title>
-    <ion-buttons slot="end">
-      <ion-button [disabled]="!hasSelectedFilter" (click)="clearAllFilters()">
-        <ion-icon name="filter-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-menu-button></ion-menu-button>
+            <ion-back-button defaultHref="/"></ion-back-button>
+        </ion-buttons>
+        <ion-title>Digital Feedback</ion-title>
+        <ion-buttons slot="end">
+            <ion-button [disabled]="!hasActiveFilters()" (click)="clearAllFilters()">
+                <ion-icon name="filter-outline"></ion-icon>
+            </ion-button>
+        </ion-buttons>
+    </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="digital-feedback-content">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Digital Feedback</ion-title>
-    </ion-toolbar>
-  </ion-header>
+    <ion-header collapse="condense">
+        <ion-toolbar>
+            <ion-title size="large">Digital Feedback</ion-title>
+        </ion-toolbar>
+    </ion-header>
 
-  <!-- Loading State -->
-  <div *ngIf="loading" class="loading-container">
-    <ion-spinner name="circular"></ion-spinner>
-    <p>Loading digital feedback data...</p>
-  </div>
-
-  <!-- Error State -->
-  <div *ngIf="errorMessage && !loading" class="error-container">
-    <ion-icon name="warning-outline" color="danger"></ion-icon>
-    <h3>Error Loading Data</h3>
-    <p>{{ errorMessage }}</p>
-    <ion-button fill="outline" (click)="doRefresh()">
-      <ion-icon name="refresh-outline" slot="start"></ion-icon>
-      Try Again
-    </ion-button>
-  </div>
-
-  <!-- Analytics Cards -->
-  <div *ngIf="!loading && !errorMessage" class="analytics-section">
-    <div class="analytics-grid">
-      <div class="analytics-card">
-        <div class="card-header">
-          <h3>Total Submissions</h3>
-          <ion-icon name="document-text-outline"></ion-icon>
-        </div>
-        <div class="card-value">{{ totalSubmissions }}</div>
-      </div>
-      
-      <div class="analytics-card">
-        <div class="card-header">
-          <h3>This Month</h3>
-          <ion-icon name="calendar-outline"></ion-icon>
-        </div>
-        <div class="card-value">{{ thisMonthCount }}</div>
-      </div>
-      
-      <div class="analytics-card">
-        <div class="card-header">
-          <h3>Avg Rating</h3>
-          <ion-icon name="star-outline"></ion-icon>
-        </div>
-        <div class="card-value">{{ averageRating }}</div>
-      </div>
-      
-      <div class="analytics-card">
-        <div class="card-header">
-          <h3>Unique Users</h3>
-          <ion-icon name="people-outline"></ion-icon>
-        </div>
-        <div class="card-value">{{ uniqueEmailsCount }}</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Controls Section -->
-  <div *ngIf="!loading && !errorMessage" class="controls-section">
-    <!-- Search Bar -->
-    <ion-searchbar
-      [(ngModel)]="searchTerm"
-      (ionInput)="handleSearch($event)"
-      placeholder="Search by name, email, or comments..."
-      debounce="300"
-      show-clear-button="focus">
-    </ion-searchbar>
-
-    <!-- Filter Chips -->
-    <div class="filter-chips">
-      <ion-chip [color]="ratingFilter === 'excellent' ? 'success' : 'medium'" 
-               (click)="toggleRatingFilter('excellent')">
-        <ion-icon name="star"></ion-icon>
-        <ion-label>Excellent</ion-label>
-      </ion-chip>
-      <ion-chip [color]="ratingFilter === 'good' ? 'primary' : 'medium'" 
-               (click)="toggleRatingFilter('good')">
-        <ion-icon name="thumbs-up"></ion-icon>
-        <ion-label>Good</ion-label>
-      </ion-chip>
-      <ion-chip [color]="ratingFilter === 'average' ? 'warning' : 'medium'" 
-               (click)="toggleRatingFilter('average')">
-        <ion-icon name="remove"></ion-icon>
-        <ion-label>Average</ion-label>
-      </ion-chip>
-      <ion-chip [color]="ratingFilter === 'poor' ? 'danger' : 'medium'" 
-               (click)="toggleRatingFilter('poor')">
-        <ion-icon name="thumbs-down"></ion-icon>
-        <ion-label>Poor</ion-label>
-      </ion-chip>
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-container">
+        <ion-spinner name="circular"></ion-spinner>
+        <p>Loading digital feedback data...</p>
     </div>
 
-    <!-- Sort & Export Row -->
-    <div class="controls-row">
-      <ion-select [(ngModel)]="sortBy" placeholder="Sort by..." interface="popover">
-        <ion-select-option value="timestamp">Date (Newest)</ion-select-option>
-        <ion-select-option value="timestamp-asc">Date (Oldest)</ion-select-option>
-        <ion-select-option value="name">Name (A-Z)</ion-select-option>
-        <ion-select-option value="rating">Rating</ion-select-option>
-      </ion-select>
-
-      <div class="button-group">
-        <ion-button fill="outline" size="small" (click)="doRefresh()" [disabled]="loading">
-          <ion-icon name="refresh-outline" slot="start"></ion-icon>
-          Refresh
+    <!-- Error State -->
+    <div *ngIf="errorMessage && !loading" class="error-container">
+        <ion-icon name="warning-outline" color="danger"></ion-icon>
+        <h3>Error Loading Data</h3>
+        <p>{{ errorMessage }}</p>
+        <ion-button fill="outline" (click)="doRefresh()">
+            <ion-icon name="refresh-outline" slot="start"></ion-icon>
+            Try Again
         </ion-button>
-        <ion-button fill="solid" size="small" (click)="exportToCSV()" [disabled]="displayedSubmissions.length === 0">
-          <ion-icon name="download-outline" slot="start"></ion-icon>
-          Export CSV
-        </ion-button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Results Section -->
-  <div *ngIf="!loading && !errorMessage" class="results-section">
-    <div class="results-header">
-      <p class="results-count">
-        Showing {{ displayedSubmissions.length }} of {{ totalSubmissions }} submissions
-        <span *ngIf="hasSelectedFilter" class="filter-indicator">(filtered)</span>
-      </p>
     </div>
 
-    <!-- Empty State -->
-    <div *ngIf="displayedSubmissions.length === 0" class="empty-state">
-      <ion-icon name="document-outline" color="medium"></ion-icon>
-      <h3>No digital feedback found</h3>
-      <p *ngIf="hasSelectedFilter">Try adjusting your filters or search terms.</p>
-      <p *ngIf="!hasSelectedFilter">Digital feedback submissions will appear here.</p>
+    <!-- Analytics Cards -->
+    <div *ngIf="!loading && !errorMessage" class="analytics-section">
+        <div class="analytics-grid">
+            <div class="analytics-card">
+                <div class="card-header">
+                    <h3>Total Submissions</h3>
+                    <ion-icon name="document-text-outline"></ion-icon>
+                </div>
+                <div class="card-value">{{ totalSubmissions }}</div>
+            </div>
+
+            <div class="analytics-card">
+                <div class="card-header">
+                    <h3>This Month</h3>
+                    <ion-icon name="calendar-outline"></ion-icon>
+                </div>
+                <div class="card-value">{{ thisMonthCount }}</div>
+            </div>
+
+            <div class="analytics-card">
+                <div class="card-header">
+                    <h3>Avg Rating</h3>
+                    <ion-icon name="star-outline"></ion-icon>
+                </div>
+                <div class="card-value">{{ averageRating }}</div>
+            </div>
+
+            <div class="analytics-card">
+                <div class="card-header">
+                    <h3>Unique Users</h3>
+                    <ion-icon name="people-outline"></ion-icon>
+                </div>
+                <div class="card-value">{{ uniqueEmailsCount }}</div>
+            </div>
+        </div>
     </div>
 
-    <!-- Submissions List -->
-    <div *ngIf="displayedSubmissions.length > 0" class="submissions-list">
-      <ion-card *ngFor="let submission of paginatedSubmissions; trackBy: trackBySubmission" 
-               class="submission-card" 
-               [class.expanded]="expandedCards.has(submission.id || submission.sessionId)">
-        
-        <!-- Card Header -->
-        <ion-card-header (click)="toggleCard(submission)">
-          <div class="card-header-content">
-            <div class="contact-info">
-              <h4>{{ submission.contact?.name || 'Anonymous' }}</h4>
-              <p class="email">{{ submission.contact?.email || 'No email' }}</p>
-              <p class="phone" *ngIf="submission.contact?.phone">{{ submission.contact.phone }}</p>
-            </div>
-            <div class="card-meta">
-              <ion-chip class="rating-chip" [color]="getRatingColor(submission.digitalFeedback?.overallExperience)">
-                {{ submission.digitalFeedback?.overallExperience || 'N/A' }}
-              </ion-chip>
-              <p class="timestamp">{{ formatDate(submission.timestamp) }}</p>
-              <ion-icon [name]="expandedCards.has(submission.id || submission.sessionId) ? 'chevron-up' : 'chevron-down'"></ion-icon>
-            </div>
-          </div>
-        </ion-card-header>
+    <!-- Controls Section -->
+    <div *ngIf="!loading && !errorMessage" class="controls-section">
+        <!-- Search Bar -->
+        <ion-searchbar [(ngModel)]="search" (ionInput)="handleSearch($event)"
+            placeholder="Search by name, email, or comments..." debounce="300" show-clear-button="focus">
+        </ion-searchbar>
 
-        <!-- Expanded Content -->
-        <ion-card-content *ngIf="expandedCards.has(submission.id || submission.sessionId)">
-          <!-- Digital Feedback Details -->
-          <div class="feedback-section">
-            <h5>Digital Experience Feedback</h5>
-            
-            <div class="feedback-item" *ngIf="submission.digitalFeedback?.websiteCrmImprovements">
-              <strong>Website/CRM Improvements:</strong>
-              <p>{{ submission.digitalFeedback.websiteCrmImprovements }}</p>
-            </div>
-            
-            <div class="feedback-item" *ngIf="submission.digitalFeedback?.likesDislikesDigital">
-              <strong>Likes/Dislikes Digital:</strong>
-              <p>{{ submission.digitalFeedback.likesDislikesDigital }}</p>
-            </div>
-            
-            <div class="feedback-item" *ngIf="submission.digitalFeedback?.priorityImprovements">
-              <strong>Priority Improvements:</strong>
-              <p>{{ submission.digitalFeedback.priorityImprovements }}</p>
-            </div>
-            
-            <div class="feedback-item" *ngIf="submission.digitalFeedback?.additionalComments">
-              <strong>Additional Comments:</strong>
-              <p>{{ submission.digitalFeedback.additionalComments }}</p>
-            </div>
-          </div>
+        <!-- Filter Chips -->
+        <div class="filter-chips">
+            <ion-chip [color]="experienceFilter === 'excellent' ? 'success' : 'medium'"
+                (click)="toggleExperienceFilter('excellent')">
+                <ion-icon name="star"></ion-icon>
+                <ion-label>Excellent</ion-label>
+            </ion-chip>
+            <ion-chip [color]="experienceFilter === 'good' ? 'primary' : 'medium'"
+                (click)="toggleExperienceFilter('good')">
+                <ion-icon name="thumbs-up"></ion-icon>
+                <ion-label>Good</ion-label>
+            </ion-chip>
+            <ion-chip [color]="experienceFilter === 'average' ? 'warning' : 'medium'"
+                (click)="toggleExperienceFilter('average')">
+                <ion-icon name="remove"></ion-icon>
+                <ion-label>Average</ion-label>
+            </ion-chip>
+            <ion-chip [color]="experienceFilter === 'poor' ? 'danger' : 'medium'"
+                (click)="toggleExperienceFilter('poor')">
+                <ion-icon name="thumbs-down"></ion-icon>
+                <ion-label>Poor</ion-label>
+            </ion-chip>
+        </div>
 
-          <!-- Technical Details -->
-          <div class="technical-section" *ngIf="submission.device || submission.network || submission.location">
-            <h5>Technical Information</h5>
-            
-            <div class="tech-grid">
-              <div class="tech-item" *ngIf="submission.device">
-                <strong>Device:</strong>
-                <p>{{ getDeviceInfo(submission.device) }}</p>
-              </div>
-              
-              <div class="tech-item" *ngIf="submission.network">
-                <strong>Network:</strong>
-                <p>{{ getNetworkInfo(submission.network) }}</p>
-              </div>
-              
-              <div class="tech-item" *ngIf="submission.location">
-                <strong>Location:</strong>
-                <p>{{ getLocationInfo(submission.location) }}</p>
-              </div>
-              
-              <div class="tech-item" *ngIf="submission.sessionId">
-                <strong>Session:</strong>
-                <p>{{ submission.sessionId }}</p>
-              </div>
-            </div>
-          </div>
+        <!-- Sort & Export Row -->
+        <div class="controls-row">
+            <ion-select [(ngModel)]="sortBy" placeholder="Sort by..." interface="popover">
+                <ion-select-option value="timestamp">Date (Newest)</ion-select-option>
+                <ion-select-option value="timestamp-asc">Date (Oldest)</ion-select-option>
+                <ion-select-option value="name">Name (A-Z)</ion-select-option>
+                <ion-select-option value="rating">Rating</ion-select-option>
+            </ion-select>
 
-          <!-- Metadata -->
-          <div class="metadata-section">
-            <p class="meta-item" *ngIf="submission.receivedAt">
-              <strong>Received:</strong> {{ formatDate(submission.receivedAt) }}
+            <div class="button-group">
+                <ion-button fill="outline" size="small" (click)="doRefresh()" [disabled]="loading">
+                    <ion-icon name="refresh-outline" slot="start"></ion-icon>
+                    Refresh
+                </ion-button>
+                <ion-button fill="solid" size="small" (click)="exportToCSV()"
+                    [disabled]="displayedSubmissions.length === 0">
+                    <ion-icon name="download-outline" slot="start"></ion-icon>
+                    Export CSV
+                </ion-button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Section -->
+    <div *ngIf="!loading && !errorMessage" class="results-section">
+        <div class="results-header">
+            <p class="results-count">
+                Showing {{ displayedSubmissions.length }} of {{ totalSubmissions }} submissions
+                <span *ngIf="hasActiveFilters()" class="filter-indicator">(filtered)</span>
             </p>
-            <p class="meta-item" *ngIf="submission.appName">
-              <strong>App:</strong> {{ submission.appName }}
-            </p>
-          </div>
-        </ion-card-content>
-      </ion-card>
-    </div>
-
-    <!-- Pagination -->
-    <div *ngIf="totalPages > 1" class="pagination-section">
-      <div class="pagination-controls">
-        <ion-button fill="clear" [disabled]="currentPage === 1" (click)="previousPage()">
-          <ion-icon name="chevron-back"></ion-icon>
-          Previous
-        </ion-button>
-        
-        <div class="page-info">
-          <span>Page {{ currentPage }} of {{ totalPages }}</span>
-          <ion-select [(ngModel)]="pageSize" (ionChange)="onPageSizeChange()">
-            <ion-select-option value="10">10 per page</ion-select-option>
-            <ion-select-option value="25">25 per page</ion-select-option>
-            <ion-select-option value="50">50 per page</ion-select-option>
-          </ion-select>
         </div>
-        
-        <ion-button fill="clear" [disabled]="currentPage === totalPages" (click)="nextPage()">
-          Next
-          <ion-icon name="chevron-forward"></ion-icon>
-        </ion-button>
-      </div>
-    </div>
-  </div>
 
-  <!-- Pull to Refresh -->
-  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
-    <ion-refresher-content
-      pullingIcon="chevron-down-circle-outline"
-      pullingText="Pull to refresh"
-      refreshingSpinner="circular"
-      refreshingText="Refreshing...">
-    </ion-refresher-content>
-  </ion-refresher>
+        <!-- Empty State -->
+        <div *ngIf="displayedSubmissions.length === 0" class="empty-state">
+            <ion-icon name="document-outline" color="medium"></ion-icon>
+            <h3>No digital feedback found</h3>
+            <p *ngIf="hasActiveFilters()">Try adjusting your filters or search terms.</p>
+            <p *ngIf="!hasActiveFilters()">Digital feedback submissions will appear here.</p>
+        </div>
+
+        <!-- Submissions List -->
+        <div *ngIf="displayedSubmissions.length > 0" class="submissions-list">
+            <ion-card *ngFor="let submission of paginatedSubmissions; trackBy: trackBySubmission"
+                class="submission-card" [class.expanded]="expandedCards.has(submission.id || submission.sessionId)">
+
+                <!-- Card Header -->
+                <ion-card-header (click)="toggleCard(submission)">
+                    <div class="card-header-content">
+                        <div class="contact-info">
+                            <h4>{{ submission.contact?.name || 'Anonymous' }}</h4>
+                            <p class="email">{{ submission.contact?.email || 'No email' }}</p>
+                            <p class="phone" *ngIf="submission.contact?.phone">{{ submission.contact.phone }}</p>
+                        </div>
+                        <div class="card-meta">
+                            <ion-chip class="rating-chip"
+                                [color]="getRatingColor(submission.digitalFeedback?.overallExperience)">
+                                {{ submission.digitalFeedback?.overallExperience || 'N/A' }}
+                            </ion-chip>
+                            <p class="timestamp">{{ formatDate(submission.timestamp) }}</p>
+                            <ion-icon
+                                [name]="expandedCards.has(submission.id || submission.sessionId) ? 'chevron-up' : 'chevron-down'"></ion-icon>
+                        </div>
+                    </div>
+                </ion-card-header>
+
+                <!-- Expanded Content -->
+                <ion-card-content *ngIf="expandedCards.has(submission.id || submission.sessionId)">
+                    <!-- Digital Feedback Details -->
+                    <div class="feedback-section">
+                        <h5>Digital Experience Feedback</h5>
+
+                        <div class="feedback-item" *ngIf="submission.digitalFeedback?.websiteCrmImprovements">
+                            <strong>Website/CRM Improvements:</strong>
+                            <p>{{ submission.digitalFeedback.websiteCrmImprovements }}</p>
+                        </div>
+
+                        <div class="feedback-item" *ngIf="submission.digitalFeedback?.likesDislikesDigital">
+                            <strong>Likes/Dislikes Digital:</strong>
+                            <p>{{ submission.digitalFeedback.likesDislikesDigital }}</p>
+                        </div>
+
+                        <div class="feedback-item" *ngIf="submission.digitalFeedback?.priorityImprovements">
+                            <strong>Priority Improvements:</strong>
+                            <p>{{ submission.digitalFeedback.priorityImprovements }}</p>
+                        </div>
+
+                        <div class="feedback-item" *ngIf="submission.digitalFeedback?.additionalComments">
+                            <strong>Additional Comments:</strong>
+                            <p>{{ submission.digitalFeedback.additionalComments }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Technical Details -->
+                    <div class="technical-section"
+                        *ngIf="submission.device || submission.network || submission.location">
+                        <h5>Technical Information</h5>
+
+                        <div class="tech-grid">
+                            <div class="tech-item" *ngIf="submission.device">
+                                <strong>Device:</strong>
+                                <p>{{ getDeviceInfo(submission.device) }}</p>
+                            </div>
+
+                            <div class="tech-item" *ngIf="submission.network">
+                                <strong>Network:</strong>
+                                <p>{{ getNetworkInfo(submission.network) }}</p>
+                            </div>
+
+                            <div class="tech-item" *ngIf="submission.location">
+                                <strong>Location:</strong>
+                                <p>{{ getLocationInfo(submission.location) }}</p>
+                            </div>
+
+                            <div class="tech-item" *ngIf="submission.sessionId">
+                                <strong>Session:</strong>
+                                <p>{{ submission.sessionId }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Metadata -->
+                    <div class="metadata-section">
+                        <p class="meta-item" *ngIf="submission.receivedAt">
+                            <strong>Received:</strong> {{ formatDate(submission.receivedAt) }}
+                        </p>
+                        <p class="meta-item" *ngIf="submission.appName">
+                            <strong>App:</strong> {{ submission.appName }}
+                        </p>
+                    </div>
+                </ion-card-content>
+            </ion-card>
+        </div>
+
+        <!-- Pagination -->
+        <div *ngIf="totalPages > 1" class="pagination-section">
+            <div class="pagination-controls">
+                <ion-button fill="clear" [disabled]="currentPage === 1" (click)="previousPage()">
+                    <ion-icon name="chevron-back"></ion-icon>
+                    Previous
+                </ion-button>
+
+                <div class="page-info">
+                    <span>Page {{ currentPage }} of {{ totalPages }}</span>
+                    <ion-select [(ngModel)]="pageSize" (ionChange)="onPageSizeChange()">
+                        <ion-select-option value="10">10 per page</ion-select-option>
+                        <ion-select-option value="25">25 per page</ion-select-option>
+                        <ion-select-option value="50">50 per page</ion-select-option>
+                    </ion-select>
+                </div>
+
+                <ion-button fill="clear" [disabled]="currentPage === totalPages" (click)="nextPage()">
+                    Next
+                    <ion-icon name="chevron-forward"></ion-icon>
+                </ion-button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pull to Refresh -->
+    <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+        <ion-refresher-content pullingIcon="chevron-down-circle-outline" pullingText="Pull to refresh"
+            refreshingSpinner="circular" refreshingText="Refreshing...">
+        </ion-refresher-content>
+    </ion-refresher>
 
 </ion-content>

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable } from "@angular/core";
 
 export interface DigitalFeedback {
   websiteCrmImprovements: string;
@@ -30,9 +30,9 @@ export interface DigitalFeedbackSubmission {
   appName?: string;
 }
 
-@Injectable({ providedIn: 'root' })
+@Injectable({ providedIn: "root" })
 export class DigitalFeedbackService {
-  private localKey = 'app_digital_feedback_submissions_v1';
+  private localKey = "app_digital_feedback_submissions_v1";
   private submissions: DigitalFeedbackSubmission[] = [];
 
   constructor() {
@@ -44,7 +44,7 @@ export class DigitalFeedbackService {
       const raw = localStorage.getItem(this.localKey);
       if (raw) this.submissions = JSON.parse(raw);
     } catch (e) {
-      console.warn('Failed to load digital feedback from storage', e);
+      console.warn("Failed to load digital feedback from storage", e);
     }
   }
 
@@ -52,7 +52,7 @@ export class DigitalFeedbackService {
     try {
       localStorage.setItem(this.localKey, JSON.stringify(this.submissions));
     } catch (e) {
-      console.warn('Failed to persist digital feedback to storage', e);
+      console.warn("Failed to persist digital feedback to storage", e);
     }
   }
 
@@ -62,7 +62,7 @@ export class DigitalFeedbackService {
 
   // Clear local cache and force fresh fetch
   clearCache() {
-    console.log('Clearing digital feedback cache');
+    console.log("Clearing digital feedback cache");
     this.submissions = [];
     localStorage.removeItem(this.localKey);
   }
@@ -76,51 +76,51 @@ export class DigitalFeedbackService {
   }
 
   private getApiBase(): string {
-    const isLocal =
-      window.location.protocol === 'file:' ||
-      window.location.hostname === 'localhost' ||
-      window.location.hostname === '127.0.0.1';
-    return isLocal ? 'http://localhost:3000' : 'https://loc-end.onrender.com';
+    // Always use production API for digital feedback
+    return "https://loc-end.onrender.com";
   }
 
   // Fetch list from backend (read-only)
   async fetchFromServer(): Promise<DigitalFeedbackSubmission[]> {
     const API_BASE = this.getApiBase();
-    console.log('Fetching from server:', `${API_BASE}/api/digital-feedback`);
-    
+    console.log("Fetching from server:", `${API_BASE}/api/digital-feedback`);
+
     try {
       const res = await fetch(`${API_BASE}/api/digital-feedback`, {
-        headers: { 
-          Accept: 'application/json',
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
+        headers: {
+          Accept: "application/json",
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
         },
       });
-      
+
       if (!res.ok) throw new Error(`GET /api/digital-feedback ${res.status}`);
-      
+
       const data = await res.json();
-      console.log('Server response:', { count: data?.length, sample: data?.[0] });
-      
+      console.log("Server response:", {
+        count: data?.length,
+        sample: data?.[0],
+      });
+
       if (!Array.isArray(data)) return [];
-      
+
       // Normalize minimal fields (defensive)
       return data.map((d: any) => ({
         id: d.id || d._id,
         timestamp: d.timestamp || d.createdAt || new Date().toISOString(),
-        sessionId: d.sessionId || 'n/a',
+        sessionId: d.sessionId || "n/a",
         digitalFeedback: d.digitalFeedback || {
-          websiteCrmImprovements: d.websiteCrmImprovements || '',
-          likesDislikesDigital: d.likesDislikesDigital || '',
-          overallExperience: d.overallExperience || '',
-          priorityImprovements: d.priorityImprovements || '',
-          additionalComments: d.additionalComments || '',
+          websiteCrmImprovements: d.websiteCrmImprovements || "",
+          likesDislikesDigital: d.likesDislikesDigital || "",
+          overallExperience: d.overallExperience || "",
+          priorityImprovements: d.priorityImprovements || "",
+          additionalComments: d.additionalComments || "",
         },
         contact: d.contact || {
-          name: d.name || '',
-          email: d.email || '',
-          phone: d.phone || '',
+          name: d.name || "",
+          email: d.email || "",
+          phone: d.phone || "",
         },
         location: d.location,
         device: d.device,
@@ -129,36 +129,40 @@ export class DigitalFeedbackService {
         appName: d.appName,
       }));
     } catch (e) {
-      console.error('Failed to fetch digital feedback list:', e);
+      console.error("Failed to fetch digital feedback list:", e);
       throw e; // Re-throw to let caller handle the error
     }
   }
 
   mergeRemote(list: DigitalFeedbackSubmission[]) {
-    console.log('Merging remote data:', { 
-      remoteCount: list.length, 
-      localCount: this.submissions.length 
+    console.log("Merging remote data:", {
+      remoteCount: list.length,
+      localCount: this.submissions.length,
     });
-    
+
     // Instead of merging, completely replace with server data
     // This ensures deletions and updates from server are reflected
-    if (list.length >= 0) { // Even if empty array, trust the server
+    if (list.length >= 0) {
+      // Even if empty array, trust the server
       this.submissions = [...list];
       this.persist();
-      console.log('Replaced local cache with server data:', this.submissions.length);
+      console.log(
+        "Replaced local cache with server data:",
+        this.submissions.length
+      );
     }
   }
 
   // Retain submit method for future use
   async submit(
-    feedback: Omit<DigitalFeedbackSubmission, 'id'>
+    feedback: Omit<DigitalFeedbackSubmission, "id">
   ): Promise<DigitalFeedbackSubmission> {
     const API_BASE = this.getApiBase();
     const response = await fetch(`${API_BASE}/api/digital-feedback`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
+        "Content-Type": "application/json",
+        Accept: "application/json",
       },
       body: JSON.stringify(feedback),
     });

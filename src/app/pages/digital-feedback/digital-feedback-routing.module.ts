@@ -1,13 +1,13 @@
-import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { NgModule } from "@angular/core";
+import { Routes, RouterModule } from "@angular/router";
 
-import { DigitalFeedbackPage } from './digital-feedback.page';
+import { DigitalFeedbackPage } from "./digital-feedback.page";
 
 const routes: Routes = [
   {
-    path: '',
-    component: DigitalFeedbackPage
-  }
+    path: "",
+    component: DigitalFeedbackPage,
+  },
 ];
 
 @NgModule({

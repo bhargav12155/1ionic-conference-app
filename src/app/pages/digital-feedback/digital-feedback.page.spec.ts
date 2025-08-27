@@ -1,7 +1,7 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { DigitalFeedbackPage } from './digital-feedback.page';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { DigitalFeedbackPage } from "./digital-feedback.page";
 
-describe('DigitalFeedbackPage', () => {
+describe("DigitalFeedbackPage", () => {
   let component: DigitalFeedbackPage;
   let fixture: ComponentFixture<DigitalFeedbackPage>;
 
@@ -11,7 +11,7 @@ describe('DigitalFeedbackPage', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });
