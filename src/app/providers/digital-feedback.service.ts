@@ -86,10 +86,10 @@ export class DigitalFeedbackService {
   // Fetch list from backend (read-only)
   async fetchFromServer(): Promise<DigitalFeedbackSubmission[]> {
     const API_BASE = this.getApiBase();
-    console.log('Fetching from server:', `${API_BASE}/api/digitalfeedback`);
+    console.log('Fetching from server:', `${API_BASE}/api/digital-feedback`);
     
     try {
-      const res = await fetch(`${API_BASE}/api/digitalfeedback`, {
+      const res = await fetch(`${API_BASE}/api/digital-feedback`, {
         headers: { 
           Accept: 'application/json',
           'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -98,7 +98,7 @@ export class DigitalFeedbackService {
         },
       });
       
-      if (!res.ok) throw new Error(`GET /api/digitalfeedback ${res.status}`);
+      if (!res.ok) throw new Error(`GET /api/digital-feedback ${res.status}`);
       
       const data = await res.json();
       console.log('Server response:', { count: data?.length, sample: data?.[0] });
@@ -154,7 +154,7 @@ export class DigitalFeedbackService {
     feedback: Omit<DigitalFeedbackSubmission, 'id'>
   ): Promise<DigitalFeedbackSubmission> {
     const API_BASE = this.getApiBase();
-    const response = await fetch(`${API_BASE}/api/digitalfeedback`, {
+    const response = await fetch(`${API_BASE}/api/digital-feedback`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
